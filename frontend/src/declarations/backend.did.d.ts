@@ -34,6 +34,7 @@ export interface _SERVICE {
   'deleteMenuItem' : ActorMethod<[bigint], undefined>,
   'editMenuItem' : ActorMethod<[bigint, string, bigint, string], undefined>,
   'finalizeOrder' : ActorMethod<[Array<OrderItem>], Order>,
+  'getAllMenuItems' : ActorMethod<[], Array<MenuItem>>,
   'getDailySalesSummary' : ActorMethod<
     [],
     { 'tax' : bigint, 'total' : bigint, 'itemCount' : bigint }

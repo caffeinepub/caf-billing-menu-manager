@@ -1,79 +1,28 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-24T19:48:38.731Z",
-  "summary": "The diff implements a substantial portion of the Café Billing & Menu Management App. Most core requirements are addressed across the backend Motoko canister and React frontend. However, several specific acceptance criteria are difficult to fully verify due to file truncation and omitted files (14 added files not shown), including the actual page components (OrderTaking, BillView, SalesReports, MenuManagement), print CSS, and theme/styling configuration. Based on available evidence, the implementation appears largely complete with a few concerns noted.",
+  "generatedAt": "2026-02-24T20:36:22.936Z",
+  "summary": "The diff addresses REQ-13 by fixing the menu data loading issue. Key changes include: removing the `!isFetching` guard from `useMenuItemsByCategory` so the query runs when the actor is ready, adding retry logic with exponential backoff, adding defensive `safeItems` guards in frontend components, and implementing proper error/loading states with refetch buttons on both MenuManagement and OrderTaking pages. The backend `getMenuItemsByCategory` query is present. However, there is no evidence of re-seeding logic or migration fix to restore the 72 items across 10 categories if the store was empty.",
   "missing_requirements": [
     {
-      "id": "REQ-3",
-      "requirement": "Discount can be entered as a flat amount or a percentage and applied before or after tax.",
-      "reason": "The useOrderState.ts hook applies discount AFTER tax (on subtotal + taxAmount), not optionally before or after tax. The AC states 'applied before or after tax' as a user choice, but no toggle for this is implemented.",
-      "evidence": [
-        "frontend/src/hooks/useOrderState.ts"
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "requirement": "After finalization, the order is saved as a sales record with a timestamp.",
-      "reason": "The backend finalizeOrder function sets timestamp to 0 with a comment 'Pl' (truncated), suggesting the actual timestamp logic was not completed. Real timestamps are required for sales records.",
+      "id": "REQ-13",
+      "requirement": "If the menu store was empty due to a migration issue, re-seeding or re-migration restores all 72 items across 10 categories.",
+      "reason": "The diff shows no seed data initialization, migration guard, or re-seeding logic in the backend (main.mo). The backend uses Map.empty<Nat, MenuItem>() with no populate/seed call, meaning an empty store would remain empty after deployment.",
       "evidence": [
         "backend/main.mo"
       ]
-    },
-    {
-      "id": "REQ-5",
-      "requirement": "Today's total sales (number of orders and total revenue) are shown prominently.",
-      "reason": "DailySummaryCard shows revenue, items sold, and tax collected, but does not show 'number of orders' as required by the AC. The orderCount metric is missing from the daily summary card.",
-      "evidence": [
-        "frontend/src/components/reports/DailySummaryCard.tsx"
-      ]
     }
   ],
-  "hallucinated_features": [
-    {
-      "description": "Internet Identity authentication integration (useInternetIdentity hook, AuthClient, login/logout flow)",
-      "reason": "The build request explicitly lists 'User authentication or multi-staff accounts' as a non-goal, yet a full Internet Identity provider with login, clear, and session management is implemented.",
-      "evidence": [
-        "frontend/src/hooks/useInternetIdentity.ts",
-        "frontend/src/hooks/useActor.ts"
-      ]
-    }
-  ],
-  "confidence": 0.62,
+  "hallucinated_features": [],
+  "confidence": 0.82,
   "changed_files": [
-    "all_files_summary.json",
     "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/index.css",
-    "frontend/index.html",
-    "frontend/src/App.tsx",
-    "frontend/src/components/bill/BillItemsTable.tsx",
-    "frontend/src/components/bill/BillLayout.tsx",
-    "frontend/src/components/layout/AppLayout.tsx",
-    "frontend/src/components/layout/Navigation.tsx",
-    "frontend/src/components/menu/DeleteMenuItemDialog.tsx",
     "frontend/src/components/menu/MenuCategorySection.tsx",
-    "frontend/src/components/menu/MenuItemForm.tsx",
-    "frontend/src/components/order/MenuItemCard.tsx",
-    "frontend/src/components/order/OrderItemRow.tsx",
-    "frontend/src/components/order/OrderSummaryPanel.tsx",
-    "frontend/src/components/order/OrderTotalsPanel.tsx",
-    "frontend/src/components/reports/DailySummaryCard.tsx",
-    "frontend/src/components/reports/DateRangeFilter.tsx",
-    "frontend/src/components/reports/DateWiseSalesTable.tsx",
-    "frontend/src/components/reports/ItemWiseSalesTable.tsx",
-    "frontend/src/hooks/useActor.ts",
-    "frontend/src/hooks/useInternetIdentity.ts",
-    "frontend/src/hooks/useOrderState.ts",
+    "frontend/src/components/order/MenuCategoryAccordion.tsx",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/index.css",
-    "frontend/src/lib/utils.ts",
-    "frontend/src/main.tsx",
-    "frontend/src/pages/BillView.tsx",
     "frontend/src/pages/MenuManagement.tsx",
     "frontend/src/pages/OrderTaking.tsx",
-    "frontend/src/pages/SalesReports.tsx",
-    "frontend/tailwind.config.js",
     "project_state.json"
   ]
 }

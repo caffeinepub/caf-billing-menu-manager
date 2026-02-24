@@ -132,6 +132,10 @@ actor {
     categoryMap.toArray().sort(func((cat1, _), (cat2, _)) { Text.compare(cat1, cat2) });
   };
 
+  public query ({ caller }) func getAllMenuItems() : async [MenuItem] {
+    menuItems.values().toArray();
+  };
+
   // Finalize Order & Print Bill
   public shared ({ caller }) func finalizeOrder(orderItems : [OrderItem]) : async Order {
     let subtotal = orderItems.foldLeft(

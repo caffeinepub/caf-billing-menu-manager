@@ -33,6 +33,7 @@ export const idlService = IDL.Service({
   'deleteMenuItem' : IDL.Func([IDL.Nat], [], []),
   'editMenuItem' : IDL.Func([IDL.Nat, IDL.Text, IDL.Nat, IDL.Text], [], []),
   'finalizeOrder' : IDL.Func([IDL.Vec(OrderItem)], [Order], []),
+  'getAllMenuItems' : IDL.Func([], [IDL.Vec(MenuItem)], ['query']),
   'getDailySalesSummary' : IDL.Func(
       [],
       [
@@ -89,6 +90,7 @@ export const idlFactory = ({ IDL }) => {
     'deleteMenuItem' : IDL.Func([IDL.Nat], [], []),
     'editMenuItem' : IDL.Func([IDL.Nat, IDL.Text, IDL.Nat, IDL.Text], [], []),
     'finalizeOrder' : IDL.Func([IDL.Vec(OrderItem)], [Order], []),
+    'getAllMenuItems' : IDL.Func([], [IDL.Vec(MenuItem)], ['query']),
     'getDailySalesSummary' : IDL.Func(
         [],
         [

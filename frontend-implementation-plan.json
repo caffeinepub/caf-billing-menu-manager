@@ -1,255 +1,48 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Café Billing & Menu Management App - Frontend Implementation",
+  "title": "Fix menu failing to load",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Implement Menu Management screen for adding, editing, and deleting menu items with name, price, and category, grouped and displayed by category",
+      "id": "REQ-13",
+      "summary": "Investigate and fix menu data loading failures on Menu Management and Order Taking screens by ensuring proper error handling, loading states, and successful data retrieval from backend queries",
       "acceptanceCriteria": [
-        "Staff can open a Menu Management screen from the main navigation.",
-        "A form allows creating a new menu item with name, price, and category fields.",
-        "Existing items can be edited inline or via a modal form.",
-        "Items can be deleted with a confirmation prompt.",
-        "Items are grouped and displayed by category on the screen.",
-        "All menu data is persisted in the backend."
+        "The Menu Management screen loads and displays all menu items grouped by their categories without any error state.",
+        "The Order Taking screen loads and displays all menu items grouped by category in the accordion sections.",
+        "No 'failed to load' or error message is shown on either page under normal operation.",
+        "The backend getMenuItems (or equivalent) query returns all seeded menu items successfully.",
+        "If the menu store was empty due to a migration issue, re-seeding or re-migration restores all 72 items across 10 categories."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/MenuManagement.tsx",
-          "operation": "create",
-          "description": "Create the Menu Management page component that fetches menu items grouped by category from the backend using getMenuItemsByCategory. Display items organized by category with forms to create new items (name, price, category fields) and edit/delete existing items. Include confirmation dialogs for deletions. Call addMenuItem, editMenuItem, and deleteMenuItem backend methods as needed."
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Review and enhance the useGetAllMenuItems and useGetMenuItemsByCategory query hooks to ensure proper error handling, retry logic, and refetch configuration. Add explicit enabled conditions and staleTime settings to prevent unnecessary refetches. Ensure query keys are stable and properly typed."
         },
         {
-          "path": "frontend/src/components/menu/MenuItemForm.tsx",
-          "operation": "create",
-          "description": "Create a reusable form component for creating and editing menu items. Accept mode ('create' or 'edit'), initial values, and onSubmit callback. Include validated inputs for name (text), price (number), and category (text or select). Use shadcn/ui form components for consistent styling."
+          "path": "frontend/src/hooks/useActor.ts",
+          "operation": "modify",
+          "description": "Verify the actor initialization logic handles all edge cases including network failures, authentication errors, and actor unavailability. Add comprehensive error logging and ensure the actor is properly cached and invalidated. Confirm queryClient invalidation triggers dependent queries correctly."
+        },
+        {
+          "path": "frontend/src/pages/MenuManagement.tsx",
+          "operation": "modify",
+          "description": "Enhance error handling and loading state display for menu data fetching. Add detailed error messages that distinguish between network errors, actor initialization failures, and empty data states. Ensure the useGetMenuItemsByCategory hook is called correctly and results are properly handled. Add a manual refetch button for recovery from transient errors."
+        },
+        {
+          "path": "frontend/src/pages/OrderTaking.tsx",
+          "operation": "modify",
+          "description": "Improve error handling and loading states for menu data in the order taking flow. Ensure the menu accordion displays appropriate messages when data fails to load versus when data is empty. Add retry capability and clear error messaging. Verify the useGetMenuItemsByCategory hook integration and ensure grouped menu items are rendered correctly."
         },
         {
           "path": "frontend/src/components/menu/MenuCategorySection.tsx",
-          "operation": "create",
-          "description": "Create a component that displays a single category with its menu items. Accept category name and items array as props. Render each item with edit and delete action buttons. Use shadcn/ui Card components for item display."
-        },
-        {
-          "path": "frontend/src/components/menu/DeleteMenuItemDialog.tsx",
-          "operation": "create",
-          "description": "Create a confirmation dialog component for menu item deletion. Accept item details and onConfirm callback. Use shadcn/ui AlertDialog component for the confirmation prompt."
-        },
-        {
-          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Add routing for the Menu Management page at /menu path. Import MenuManagement component and register the route in the router configuration. Ensure the route is accessible from the main navigation."
+          "description": "Add defensive checks for undefined or null menu items array. Ensure the component gracefully handles edge cases where category data is malformed or missing. Add console logging for debugging menu data structure issues."
         },
         {
-          "path": "frontend/src/components/layout/Navigation.tsx",
-          "operation": "create",
-          "description": "Create a bottom tab navigation component with links to Menu (/menu), Order (/order), and Reports (/reports) screens. Use large tap targets (min 44px) and icons with labels. Style with warm café colors from the theme."
-        },
-        {
-          "path": "frontend/src/components/layout/AppLayout.tsx",
-          "operation": "create",
-          "description": "Create a layout wrapper component that includes the generated café logo (frontend/public/assets/generated/cafe-logo.dim_256x256.png) in the header and the bottom Navigation component. Wrap page content with appropriate padding to accommodate fixed navigation."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Implement Order Taking screen displaying menu grouped by category with add/adjust quantity controls and real-time order summary panel",
-      "acceptanceCriteria": [
-        "The Order Taking screen lists all menu items grouped by category.",
-        "Tapping an item adds it to the active order with quantity 1.",
-        "Quantity can be incremented or decremented per item; decrementing to 0 removes the item.",
-        "The order summary shows item name, unit price, quantity, and line total for each item.",
-        "The order summary updates in real time as items are added or modified."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/OrderTaking.tsx",
-          "operation": "create",
-          "description": "Create the Order Taking page component that fetches menu items grouped by category from getMenuItemsByCategory. Maintain active order state (array of OrderItem objects). Display menu items grouped by category with tap/click handlers to add items to order. Include an order summary panel showing selected items with quantities and line totals. Update order state in real time as items are added or quantities change."
-        },
-        {
-          "path": "frontend/src/components/order/MenuItemCard.tsx",
-          "operation": "create",
-          "description": "Create a menu item card component optimized for order taking. Display item name, price, and category. Include large tap target for adding item to order. Style with shadcn/ui Card and warm café theme colors."
-        },
-        {
-          "path": "frontend/src/components/order/OrderSummaryPanel.tsx",
-          "operation": "create",
-          "description": "Create order summary panel component that displays current order items with quantity controls. For each item, show name, unit price, quantity (with increment/decrement buttons), and line total (quantity × price). Include remove button that sets quantity to 0. Ensure all interactive elements have large tap targets."
-        },
-        {
-          "path": "frontend/src/components/order/OrderItemRow.tsx",
-          "operation": "create",
-          "description": "Create a single order item row component for the summary panel. Display item name, unit price, quantity with +/− buttons, and calculated line total. Accept callbacks for quantity changes and item removal."
-        },
-        {
-          "path": "frontend/src/hooks/useOrderState.ts",
-          "operation": "create",
-          "description": "Create a custom hook for managing active order state. Provide functions to add items, update quantities, remove items, and calculate totals. Return order items array and manipulation functions."
-        },
-        {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/components/order/MenuCategoryAccordion.tsx",
           "operation": "modify",
-          "description": "Add routing for the Order Taking page at /order path. Import OrderTaking component and register the route."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Calculate and display subtotal, configurable tax percentage, optional discount, and final total with real-time updates",
-      "acceptanceCriteria": [
-        "Subtotal is the sum of all line totals in the current order.",
-        "Tax is applied as a configurable percentage of the subtotal.",
-        "Discount can be entered as a flat amount or a percentage and applied before or after tax.",
-        "Final total reflects subtotal + tax − discount.",
-        "All values update instantly when the order or discount/tax fields change."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/order/OrderTotalsPanel.tsx",
-          "operation": "create",
-          "description": "Create order totals panel component that displays subtotal, tax (with editable percentage input), discount (with type selector for flat/percentage and amount input), and final total. Accept order items and calculate subtotal from line totals. Apply tax as percentage of subtotal. Apply discount and calculate final total. All calculations update in real time as inputs change."
-        },
-        {
-          "path": "frontend/src/components/order/TaxInput.tsx",
-          "operation": "create",
-          "description": "Create a tax input component with a number input for tax percentage. Display calculated tax amount. Accept subtotal and onChange callback."
-        },
-        {
-          "path": "frontend/src/components/order/DiscountInput.tsx",
-          "operation": "create",
-          "description": "Create a discount input component with type selector (flat amount or percentage) and amount input. Display calculated discount amount. Accept subtotal/total and onChange callback."
-        },
-        {
-          "path": "frontend/src/pages/OrderTaking.tsx",
-          "operation": "modify",
-          "description": "Integrate OrderTotalsPanel component into the Order Taking page. Pass current order items to the totals panel. Maintain tax and discount state in the page component."
-        },
-        {
-          "path": "frontend/src/hooks/useOrderState.ts",
-          "operation": "modify",
-          "description": "Extend the order state hook to include tax rate, discount type, and discount amount state. Add calculation functions for subtotal, tax amount, discount amount, and final total. Return calculated values along with setters."
-        }
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "summary": "Generate print-friendly bill layout with all order details and provide Print Bill button to trigger browser print dialog",
-      "acceptanceCriteria": [
-        "A 'Finalize Order' action generates a bill view with all required fields.",
-        "The bill layout is clean and readable in a narrow print format (receipt-style).",
-        "A 'Print Bill' button opens the browser print dialog with only the bill visible.",
-        "After finalization, the order is saved as a sales record with a timestamp.",
-        "The order taking screen resets after a bill is finalized."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/BillView.tsx",
-          "operation": "create",
-          "description": "Create a bill view page component with print-friendly layout. Display café name with the generated logo (frontend/public/assets/generated/cafe-logo.dim_256x256.png), date and time, order items with quantities and prices, subtotal, tax, discount (if any), and final total. Style for narrow receipt format. Include Print Bill button that triggers window.print(). Use @media print CSS to hide non-printable elements."
-        },
-        {
-          "path": "frontend/src/components/bill/BillLayout.tsx",
-          "operation": "create",
-          "description": "Create the main bill layout component optimized for printing. Accept order data (items, subtotal, tax, discount, total, timestamp). Render in receipt-style format with clear typography and spacing. Include café branding at the top using the generated logo image."
-        },
-        {
-          "path": "frontend/src/components/bill/BillItemsTable.tsx",
-          "operation": "create",
-          "description": "Create a table component for bill items. Display each item with name, quantity, unit price, and line total in a clean tabular format suitable for receipt printing."
-        },
-        {
-          "path": "frontend/src/pages/OrderTaking.tsx",
-          "operation": "modify",
-          "description": "Add Finalize Order button that calls finalizeOrder backend method with current order items, then navigates to /bill/:orderId route. Reset order state after successful finalization."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Add routing for the Bill View page at /bill/:orderId path. Import BillView component and register the route."
-        },
-        {
-          "path": "frontend/src/index.css",
-          "operation": "modify",
-          "description": "Add @media print styles to hide navigation, buttons, and non-printable UI elements. Ensure bill content uses appropriate print-friendly font sizes and spacing for receipt format."
-        }
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "summary": "Implement Sales Reports screen with daily sales summary, item-wise sales, and date-wise sales history with date range filtering",
-      "acceptanceCriteria": [
-        "The Reports screen is accessible from the main navigation.",
-        "Today's total sales (number of orders and total revenue) are shown prominently.",
-        "A table or list shows each menu item with total quantity sold and total revenue.",
-        "A date-wise history table shows revenue and order count per day.",
-        "A date range picker filters the date-wise history.",
-        "All report data is derived from persisted sales records in the backend."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/SalesReports.tsx",
-          "operation": "create",
-          "description": "Create the Sales Reports page with three sections: (1) Daily Summary showing today's total from getDailySalesSummary, (2) Item-wise Sales table from getItemWiseSales displaying item name, quantity sold, and revenue, (3) Date-wise History table from getDateWiseSalesHistory with date range filter inputs. Fetch data from backend methods on mount and when filters change."
-        },
-        {
-          "path": "frontend/src/components/reports/DailySummaryCard.tsx",
-          "operation": "create",
-          "description": "Create a prominent card component displaying today's sales summary. Show total revenue, tax amount, and item count from getDailySalesSummary backend method. Style with large, easy-to-read numbers using shadcn/ui Card."
-        },
-        {
-          "path": "frontend/src/components/reports/ItemWiseSalesTable.tsx",
-          "operation": "create",
-          "description": "Create a table component for item-wise sales. Display rows with item name, total quantity sold, and total revenue. Accept data from getItemWiseSales backend method. Use shadcn/ui Table component for consistent styling."
-        },
-        {
-          "path": "frontend/src/components/reports/DateWiseSalesTable.tsx",
-          "operation": "create",
-          "description": "Create a table component for date-wise sales history. Display rows with date, order count, and total revenue per day. Accept filtered data from getDateWiseSalesHistory backend method. Use shadcn/ui Table component."
-        },
-        {
-          "path": "frontend/src/components/reports/DateRangeFilter.tsx",
-          "operation": "create",
-          "description": "Create a date range filter component with start and end date inputs. Accept onChange callback that passes selected date range. Use shadcn/ui Calendar or date input components for consistent styling."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Add routing for the Sales Reports page at /reports path. Import SalesReports component and register the route."
-        }
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "summary": "Apply warm café-inspired visual theme with earthy tones, clean typography, mobile-first layout, and bottom-tab navigation suitable for one-handed use",
-      "acceptanceCriteria": [
-        "Color palette uses earthy/warm tones (browns, cream, amber) consistently across all screens.",
-        "Typography is a clean, legible sans-serif font at comfortable sizes for mobile.",
-        "Navigation uses a bottom tab bar with icons and labels for Menu, Order, Reports.",
-        "All interactive elements (buttons, item cards) have large tap targets (min 44px).",
-        "No cluttered UI; each screen focuses on a single task."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/tailwind.config.js",
-          "operation": "modify",
-          "description": "Extend Tailwind theme with warm café color palette: espresso browns (#3E2723, #4E342E, #5D4037), cream (#FFF8E1, #FFECB3), warm amber (#FFB300, #FFA000, #FF8F00). Add custom color variables for primary, secondary, accent, and background using these café tones. Set base font to a clean sans-serif (e.g., Inter or system fonts). Configure spacing utilities for mobile-friendly tap targets."
-        },
-        {
-          "path": "frontend/src/index.css",
-          "operation": "modify",
-          "description": "Apply global base styles using the warm café theme colors. Set body background to cream tone. Define heading and text styles with legible font sizes (min 16px for body text). Ensure all interactive elements (buttons, links, cards) have minimum 44px height/width tap targets. Add CSS custom properties for theme colors that map to Tailwind config."
-        },
-        {
-          "path": "frontend/src/components/layout/Navigation.tsx",
-          "operation": "modify",
-          "description": "Style the bottom tab navigation with café theme colors. Use fixed positioning at bottom with adequate height for tap targets (min 60px). Include icons and labels for Menu, Order, and Reports tabs. Apply active state styling with warm accent colors. Ensure navigation is fully functional on mobile viewports."
-        },
-        {
-          "path": "frontend/src/components/layout/AppLayout.tsx",
-          "operation": "modify",
-          "description": "Apply café theme styling to the layout wrapper. Style header with warm background color and display the generated café logo (frontend/public/assets/generated/cafe-logo.dim_256x256.png). Add bottom padding to page content area to accommodate fixed bottom navigation. Use mobile-first responsive design with appropriate breakpoints."
+          "description": "Add validation for the menuItemsByCategory prop to handle undefined, null, or empty arrays gracefully. Ensure accordion sections render correctly even when data structure is unexpected. Add fallback UI for malformed category data and improve error boundary handling."
         }
       ]
     }

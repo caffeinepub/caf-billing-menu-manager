@@ -31,6 +31,7 @@ export interface backendInterface {
     deleteMenuItem(id: bigint): Promise<void>;
     editMenuItem(id: bigint, name: string, price: bigint, category: string): Promise<void>;
     finalizeOrder(orderItems: Array<OrderItem>): Promise<Order>;
+    getAllMenuItems(): Promise<Array<MenuItem>>;
     getDailySalesSummary(): Promise<{
         tax: bigint;
         total: bigint;

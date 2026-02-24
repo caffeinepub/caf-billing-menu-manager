@@ -33,13 +33,13 @@ export default function BillLayout({
       <div className="text-center mb-4">
         <div className="flex justify-center mb-2">
           <img
-            src="/assets/generated/cafe-logo.dim_256x256.png"
-            alt="Café Logo"
-            className="w-12 h-12 object-cover rounded"
+            src="/assets/generated/cafe-logo.png"
+            alt="Simple Sips Cafe Logo"
+            className="w-16 h-16 object-contain"
           />
         </div>
-        <h2 className="font-bold text-base tracking-wide uppercase">My Café</h2>
-        <p className="text-[10px] text-gray-600 mt-0.5">Billing Receipt</p>
+        <h2 className="font-bold text-base tracking-wide">Simple Sips Cafe</h2>
+        <p className="text-[10px] text-gray-500 mt-0.5">ESTD 2026 · Billing Receipt</p>
         <div className="border-t border-dashed border-gray-400 mt-2 pt-2">
           <p className="text-[10px]">{formatDateTime(timestamp)}</p>
           {orderNumber !== undefined && (
@@ -75,7 +75,7 @@ export default function BillLayout({
 
       {/* Footer */}
       <div className="text-center mt-4 pt-2 border-t border-dashed border-gray-400">
-        <p className="text-[10px] text-gray-600">Thank you for visiting!</p>
+        <p className="text-[10px] text-gray-600">Thank you for visiting Simple Sips Cafe!</p>
         <p className="text-[10px] text-gray-600">Please come again ☕</p>
       </div>
     </div>

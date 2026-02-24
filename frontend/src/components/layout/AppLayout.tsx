@@ -9,15 +9,17 @@ export default function AppLayout() {
     <div className="min-h-screen bg-background flex flex-col max-w-md mx-auto relative">
       {/* Header */}
       <header className="no-print sticky top-0 z-40 bg-card border-b border-border shadow-xs">
-        <div className="flex items-center gap-3 px-4 py-3">
+        <div className="flex items-center gap-3 px-4 py-2">
           <img
-            src="/assets/generated/cafe-logo.dim_256x256.png"
-            alt="Café Logo"
-            className="w-9 h-9 rounded-lg object-cover"
+            src="/assets/generated/cafe-logo.png"
+            alt="Simple Sips Cafe Logo"
+            className="h-11 w-11 object-contain flex-shrink-0"
           />
           <div>
-            <h1 className="font-display text-lg font-bold text-foreground leading-tight">My Café</h1>
-            <p className="text-xs text-muted-foreground">Billing & Menu Manager</p>
+            <h1 className="font-display text-xl font-bold text-amber-warm leading-tight tracking-tight">
+              Simple Sips Cafe
+            </h1>
+            <p className="text-xs text-muted-foreground">Billing &amp; Menu Manager</p>
           </div>
         </div>
       </header>

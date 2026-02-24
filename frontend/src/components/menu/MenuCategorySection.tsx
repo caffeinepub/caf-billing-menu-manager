@@ -28,17 +28,20 @@ export default function MenuCategorySection({
 }: MenuCategorySectionProps) {
   const [openEditId, setOpenEditId] = useState<bigint | null>(null);
 
+  // Guard against undefined/null items array
+  const safeItems = Array.isArray(items) ? items : [];
+
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 px-1">
         <h3 className="font-display font-semibold text-base text-foreground">{category}</h3>
         <Badge variant="secondary" className="text-xs px-2 py-0.5 rounded-full">
-          {items.length}
+          {safeItems.length}
         </Badge>
       </div>
 
       <div className="space-y-2">
-        {items.map(item => (
+        {safeItems.map(item => (
           <Card key={item.id.toString()} className="flex items-center px-4 py-3 gap-3 shadow-xs">
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm text-foreground truncate">{item.name}</p>

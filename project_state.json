@@ -1,14 +1,15 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 3,
-  "summary": "A café billing and menu management web app. Features: digital menu management (add/edit/delete items with categories and prices), order taking with quantity adjustments, automatic bill calculation (subtotal, tax, discount, total), print-friendly bill layout, daily sales dashboard with item-wise and date-wise reports. Works offline with local data storage. Note: Bluetooth printer connectivity is not supported in web apps; browser print function is the alternative.",
+  "projectStateVersion": 15,
+  "summary": "A café billing and menu management web app. Features: digital menu management (add/edit/delete items with categories and prices), order taking with quantity adjustments, automatic bill calculation (subtotal, tax, discount, total), print-friendly bill layout, daily sales dashboard with item-wise and date-wise reports. Works offline with local data storage. Menu pre-populated with 10 categories: Tea (11 items), Coffee (5 items), Sandwich (4 items), Toast (4 items), Light Snacks (11 items), Momos (10 items), Burgers (3 items), Starters (8 items), Refreshers (3 items), and Combo (13 items) with exact names and prices as provided by the user.",
   "architectural_notes": [
     "Bluetooth thermal POS printer connectivity is not feasible in web apps; browser print function used as alternative",
     "All data stored locally (localStorage or IndexedDB) for full offline support"
   ],
-  "known_issues": [],
-  "isFixRequest": false,
-  "imageRequirements": "## Required Images\n- Warm café-themed logo mark with a stylized coffee cup and steam, suitable for app header (cafe-logo.dim_256x256.png)",
+  "known_issues": [
+    "Menu fails to load (reported by user in Version 6)"
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
       "id": "feature-implement-a-menu-management-screen-where-caf-staff-can-add-edit-and-delete-menu-items-each-item-must-have-a-name-price-and-category-e-g-cold-coffee-refreshers-snacks-hot-drinks-etc-items-should-be-grouped-and-displayed-by-category",
@@ -57,6 +58,54 @@
         "REQ-6"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-on-the-order-taking-screen-replace-the-static-category-headings-with-collapsible-accordion-dropdown-sections-each-category-heading-should-act-as-a-toggle-tapping-clicking-it-expands-or-collapses-the-list-of-items-beneath-it-all-categories-should-be-expanded-by-default-the-category-heading-must-clearly-indicate-its-expanded-collapsed-state-e-g-with-a-chevron-icon-this-allows-staff-to-quickly-collapse-categories-they-don-t-need-and-find-items-faster",
+      "title": "On the Order Taking screen, replace the static category headings with collapsible accordion/dropdown sections. Each category heading should act as a toggle — tapping/clicking it expands or collapses the list of items beneath it. All categories should be expanded by default. The category heading must clearly indicate its expanded/collapsed state (e.g., with a chevron icon). This allows staff to quickly collapse categories they don't need and find items faster.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-save-the-uploaded-caf-logo-final-01-png-as-a-static-asset-at-frontend-public-assets-generated-cafe-logo-png-and-render-it-in-the-app-header-applayout-tsx-alongside-the-caf-name-simple-sips-cafe-the-logo-should-appear-on-the-left-side-of-the-sticky-header-sized-appropriately-for-mobile-height-40-48px-with-the-caf-name-simple-sips-cafe-displayed-next-to-it-in-a-style-matching-the-warm-amber-orange-script-branding-shown-in-the-uploaded-image",
+      "title": "Save the uploaded café logo (final_01.png) as a static asset at frontend/public/assets/generated/cafe-logo.png and render it in the app header (AppLayout.tsx) alongside the café name 'Simple Sips Cafe'. The logo should appear on the left side of the sticky header, sized appropriately for mobile (height ~40–48px), with the café name 'Simple Sips Cafe' displayed next to it in a style matching the warm amber/orange script branding shown in the uploaded image.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-print-friendly-billlayout-component-to-display-the-simple-sips-cafe-logo-image-and-the-caf-name-simple-sips-cafe-at-the-top-of-the-printed-bill-receipt-replacing-any-generic-placeholder-text-currently-used-for-the-caf-name",
+      "title": "Update the print-friendly BillLayout component to display the Simple Sips Cafe logo image and the café name 'Simple Sips Cafe' at the top of the printed bill receipt, replacing any generic placeholder text currently used for the café name.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-save-the-newly-uploaded-caf-logo-image-png-as-a-static-asset-at-frontend-public-assets-generated-cafe-logo-png-replacing-the-existing-file-update-applayout-tsx-to-render-this-new-logo-image-in-the-sticky-header-at-the-same-position-and-size-height-40-48px-alongside-the-simple-sips-cafe-caf-name",
+      "title": "Save the newly uploaded café logo (image.png) as a static asset at frontend/public/assets/generated/cafe-logo.png, replacing the existing file. Update AppLayout.tsx to render this new logo image in the sticky header at the same position and size (height ~40–48px) alongside the 'Simple Sips Cafe' café name.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-the-print-friendly-billlayout-component-to-use-the-new-caf-logo-image-frontend-public-assets-generated-cafe-logo-png-at-the-top-of-the-printed-bill-receipt-replacing-the-previously-used-logo",
+      "title": "Update the print-friendly BillLayout component to use the new café logo image (frontend/public/assets/generated/cafe-logo.png) at the top of the printed bill receipt, replacing the previously used logo.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-investigate-and-fix-the-menu-data-failing-to-load-on-the-menu-management-screen-the-issue-was-reported-in-version-6-ensure-the-backend-query-for-fetching-all-menu-items-returns-data-correctly-and-that-the-frontend-menumanagement-page-and-ordertaking-page-both-successfully-retrieve-and-display-menu-items-grouped-by-category-handle-any-actor-initialization-deserialization-or-migration-errors-that-may-be-preventing-menu-data-from-loading",
+      "title": "Investigate and fix the menu data failing to load on the Menu Management screen. The issue was reported in Version 6. Ensure the backend query for fetching all menu items returns data correctly, and that the frontend MenuManagement page and OrderTaking page both successfully retrieve and display menu items grouped by category. Handle any actor initialization, deserialization, or migration errors that may be preventing menu data from loading.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -93,6 +142,32 @@
     {
       "id": "AR-6",
       "summary": "Offline functionality with local data storage",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Pre-populate full menu with 10 categories and exact items/prices: Tea (11), Coffee (5), Sandwich (4), Toast (4), Light Snacks (11), Momos (10), Burgers (3), Starters (8), Refreshers (3), Combo (13)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Update the backend migration to seed the menu with all 72 items across 10 categories using the exact names and prices provided: TEA (Normal Tea ₹20, Masala Tea ₹25, Ginger Tea ₹25, Elaichi Tea ₹25, Kesar Tea ₹40, Malai Tea ₹30, Green Tea ₹30, Black Tea ₹20, Lemon Tea ₹20, Darjeeling Tea ₹35, Lemon Iced Tea (300 ML) ₹60), COFFEE (Milk Coffee ₹40, Cappuccino ₹60, Americano ₹50, Iced Americano ₹70, Cold Coffee ₹70), SANDWICH (Veg Sandwich ₹60, Cheese Corn Sandwich ₹85, Paneer Sandwich ₹100, Double Jumbo Sandwich ₹120), TOAST (Butter Toast ₹40, Peri Peri Toast ₹50, Jam Toast ₹40, Malai Toast ₹50), LIGHT SNACKS (Wai Wai (Soup) ₹45, Wai Wai (Dry) ₹45, Maggi (Soup) ₹45, Maggi (Dry) ₹45, Butter Maggi ₹55, Vegetables Maggi ₹60, Cheese Maggi ₹65, Corn Maggi ₹70, Cheese Corn Maggi ₹75, Pasta (Red) ₹85, Pasta (White) ₹85), MOMOS (Veg Momo (Steam – 8 pcs) ₹50, Veg Momo (Fry – 6 pcs) ₹60, Cheese Momo (Steam – 8 pcs) ₹70, Cheese Momo (Fry – 6 pcs) ₹80, Corn Cheese Momo (Steam – 8 pcs) ₹80, Corn Cheese Momo (Fry – 6 pcs) ₹90, Paneer Momo (Steam – 8 pcs) ₹90, Paneer Momo (Fry – 6 pcs) ₹100, Kurkure Momo ₹80, Chilli Momo ₹80), BURGERS (Veg Burger ₹60, Cheese Burger ₹70, Paneer Burger ₹90), STARTERS (French Fries ₹70, Peri Peri Fries ₹85, American Corn ₹80, Chilli Potato ₹90, Baby Corn Chilli ₹100, Paneer Pakora (6 pcs) ₹90, Smileys (6 pcs) ₹75, Potato Cheese Shots (7 pcs) ₹70), REFRESHERS (Masala Coke ₹50, Fresh Lime Soda ₹50, Mojito ₹75), COMBO (Masala / Ginger Tea + Butter Toast ₹55, Normal Tea + Malai Toast ₹65, Veg Sandwich + Normal Tea ₹75, Maggi + Milk Coffee ₹80, French Fries + Cold Coffee ₹135, Corn Cheese Sandwich + Cold Coffee ₹150, Veg Momo + Lemon Iced Tea ₹105, Paneer Pakora (6 pcs) + Masala Tea ₹110, Pasta + Cold Coffee ₹150, Veg Burger + Smileys (6 pcs) + Tea ₹140, Chilli Potato + Green Tea ₹115, Paneer Sandwich + Peri Peri Fries ₹180, Cheese Burger + Peri Peri Fries + Cold Coffee ₹210). The migration must replace any previously seeded items and preserve existing orders.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Add a dedicated dropdown/accordion for each category heading on the menu so users can expand/collapse categories to easily find items",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Add a logo and café name/branding to the app header",
       "reqIds": [],
       "status": "pending"
     }

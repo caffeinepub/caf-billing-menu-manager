@@ -11,9 +11,13 @@ export function useMenuItemsByCategory() {
     queryKey: ['menuItemsByCategory'],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getMenuItemsByCategory();
+      const result = await actor.getMenuItemsByCategory();
+      return result;
     },
-    enabled: !!actor && !isFetching,
+    enabled: !!actor,
+    retry: 3,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
+    staleTime: 30_000,
   });
 }
 

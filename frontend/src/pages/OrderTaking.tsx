@@ -1,15 +1,13 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { ChevronDown, ChevronUp, CheckCircle, ShoppingCart } from 'lucide-react';
+import { ChevronDown, ChevronUp, CheckCircle, ShoppingCart, AlertCircle, RefreshCw } from 'lucide-react';
 import { useMenuItemsByCategory, useFinalizeOrder } from '../hooks/useQueries';
 import { useOrderState } from '../hooks/useOrderState';
-import MenuItemCard from '../components/order/MenuItemCard';
+import MenuCategoryAccordion from '../components/order/MenuCategoryAccordion';
 import OrderSummaryPanel from '../components/order/OrderSummaryPanel';
 import OrderTotalsPanel from '../components/order/OrderTotalsPanel';
 import type { MenuItem, OrderItem } from '../backend';
@@ -17,7 +15,7 @@ import type { MenuItem, OrderItem } from '../backend';
 export default function OrderTaking() {
   const navigate = useNavigate();
   const [summaryExpanded, setSummaryExpanded] = useState(true);
-  const { data: categories, isLoading } = useMenuItemsByCategory();
+  const { data: categories, isLoading, error, refetch, isFetching } = useMenuItemsByCategory();
   const finalizeMutation = useFinalizeOrder();
 
   const {
@@ -29,7 +27,6 @@ export default function OrderTaking() {
     subtotal, taxAmount, discountAmount, total,
   } = useOrderState();
 
-  // Store bill data for navigation
   const billDataRef = useRef<{
     items: typeof items;
     subtotal: number;
@@ -59,7 +56,6 @@ export default function OrderTaking() {
     try {
       const order = await finalizeMutation.mutateAsync(orderItems);
 
-      // Store bill data in sessionStorage for the bill page
       const billData = {
         items,
         subtotal,
@@ -87,8 +83,8 @@ export default function OrderTaking() {
   return (
     <div className="flex flex-col h-full">
       {/* Menu Section */}
-      <div className="flex-1 overflow-y-auto px-4 pt-5 pb-4 space-y-5">
-        <div className="flex items-center justify-between">
+      <div className="flex-1 overflow-y-auto px-4 pt-5 pb-4 space-y-3">
+        <div className="flex items-center justify-between mb-1">
           <h2 className="font-display font-bold text-xl text-foreground">New Order</h2>
           {totalItemCount > 0 && (
             <Badge className="rounded-full px-2.5">
@@ -97,42 +93,62 @@ export default function OrderTaking() {
           )}
         </div>
 
+        {/* Loading State */}
         {isLoading && (
-          <div className="space-y-4">
-            {[1, 2].map(i => (
-              <div key={i} className="space-y-2">
-                <Skeleton className="h-5 w-28" />
-                <div className="grid grid-cols-2 gap-2">
-                  {[1, 2, 3, 4].map(j => <Skeleton key={j} className="h-16 rounded-lg" />)}
+          <div className="space-y-3">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="rounded-xl border border-border overflow-hidden">
+                <Skeleton className="h-[52px] w-full" />
+                <div className="p-3 space-y-2">
+                  {[1, 2, 3].map(j => <Skeleton key={j} className="h-14 rounded-lg" />)}
                 </div>
               </div>
             ))}
           </div>
         )}
 
-        {!isLoading && (!categories || categories.length === 0) && (
+        {/* Error State */}
+        {error && !isLoading && (
+          <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
+            <div className="w-14 h-14 rounded-2xl bg-destructive/10 flex items-center justify-center">
+              <AlertCircle size={26} className="text-destructive" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">Failed to load menu</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.'}
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => refetch()}
+              disabled={isFetching}
+            >
+              <RefreshCw size={14} className={isFetching ? 'animate-spin' : ''} />
+              {isFetching ? 'Retrying…' : 'Try Again'}
+            </Button>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!isLoading && !error && (!categories || categories.length === 0) && (
           <div className="text-center py-12">
             <p className="text-sm text-muted-foreground">No menu items found.</p>
             <p className="text-xs text-muted-foreground mt-1">Add items in the Menu tab first.</p>
           </div>
         )}
 
-        {!isLoading && categories && categories.map(([category, menuItems]) => (
-          <div key={category} className="space-y-2">
-            <h3 className="font-display font-semibold text-sm text-muted-foreground uppercase tracking-wide px-1">
-              {category}
-            </h3>
-            <div className="space-y-2">
-              {menuItems.map((item: MenuItem) => (
-                <MenuItemCard
-                  key={item.id.toString()}
-                  item={item}
-                  quantityInOrder={getQuantityInOrder(item.id)}
-                  onAdd={addItem}
-                />
-              ))}
-            </div>
-          </div>
+        {/* Menu Categories */}
+        {!isLoading && !error && categories && categories.map(([category, menuItems]) => (
+          <MenuCategoryAccordion
+            key={category}
+            category={category}
+            menuItems={menuItems as MenuItem[]}
+            getQuantityInOrder={getQuantityInOrder}
+            onAdd={addItem}
+          />
         ))}
       </div>
 

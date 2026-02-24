@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, UtensilsCrossed } from 'lucide-react';
+import { Plus, UtensilsCrossed, RefreshCw, AlertCircle } from 'lucide-react';
 import { useMenuItemsByCategory, useAddMenuItem, useEditMenuItem, useDeleteMenuItem } from '../hooks/useQueries';
 import MenuCategorySection from '../components/menu/MenuCategorySection';
 import MenuItemForm from '../components/menu/MenuItemForm';
@@ -12,7 +12,7 @@ export default function MenuManagement() {
   const [editingId, setEditingId] = useState<bigint | null>(null);
   const [deletingId, setDeletingId] = useState<bigint | null>(null);
 
-  const { data: categories, isLoading, error } = useMenuItemsByCategory();
+  const { data: categories, isLoading, error, refetch, isFetching } = useMenuItemsByCategory();
   const addMutation = useAddMenuItem();
   const editMutation = useEditMenuItem();
   const deleteMutation = useDeleteMenuItem();
@@ -58,7 +58,9 @@ export default function MenuManagement() {
         <div>
           <h2 className="font-display font-bold text-xl text-foreground">Menu</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {totalItems} item{totalItems !== 1 ? 's' : ''} across {categories?.length ?? 0} categories
+            {isLoading
+              ? 'Loading…'
+              : `${totalItems} item${totalItems !== 1 ? 's' : ''} across ${categories?.length ?? 0} categories`}
           </p>
         </div>
 
@@ -97,9 +99,27 @@ export default function MenuManagement() {
       )}
 
       {/* Error State */}
-      {error && (
-        <div className="text-center py-8">
-          <p className="text-sm text-destructive">Failed to load menu items. Please try again.</p>
+      {error && !isLoading && (
+        <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
+          <div className="w-14 h-14 rounded-2xl bg-destructive/10 flex items-center justify-center">
+            <AlertCircle size={26} className="text-destructive" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-foreground">Failed to load menu</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.'}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => refetch()}
+            disabled={isFetching}
+          >
+            <RefreshCw size={14} className={isFetching ? 'animate-spin' : ''} />
+            {isFetching ? 'Retrying…' : 'Try Again'}
+          </Button>
         </div>
       )}
 
@@ -124,7 +144,7 @@ export default function MenuManagement() {
       )}
 
       {/* Categories */}
-      {!isLoading && categories && categories.length > 0 && (
+      {!isLoading && !error && categories && categories.length > 0 && (
         <div className="space-y-6">
           {categories.map(([category, items]) => (
             <MenuCategorySection

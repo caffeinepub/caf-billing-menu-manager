@@ -113,6 +113,7 @@ export interface backendInterface {
     deleteMenuItem(id: bigint): Promise<void>;
     editMenuItem(id: bigint, name: string, price: bigint, category: string): Promise<void>;
     finalizeOrder(orderItems: Array<OrderItem>): Promise<Order>;
+    getAllMenuItems(): Promise<Array<MenuItem>>;
     getDailySalesSummary(): Promise<{
         tax: bigint;
         total: bigint;
@@ -177,6 +178,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.finalizeOrder(arg0);
+            return result;
+        }
+    }
+    async getAllMenuItems(): Promise<Array<MenuItem>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAllMenuItems();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAllMenuItems();
             return result;
         }
     }
