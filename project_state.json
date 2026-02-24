@@ -1,0 +1,104 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 3,
+  "summary": "A café billing and menu management web app. Features: digital menu management (add/edit/delete items with categories and prices), order taking with quantity adjustments, automatic bill calculation (subtotal, tax, discount, total), print-friendly bill layout, daily sales dashboard with item-wise and date-wise reports. Works offline with local data storage. Note: Bluetooth printer connectivity is not supported in web apps; browser print function is the alternative.",
+  "architectural_notes": [
+    "Bluetooth thermal POS printer connectivity is not feasible in web apps; browser print function used as alternative",
+    "All data stored locally (localStorage or IndexedDB) for full offline support"
+  ],
+  "known_issues": [],
+  "isFixRequest": false,
+  "imageRequirements": "## Required Images\n- Warm café-themed logo mark with a stylized coffee cup and steam, suitable for app header (cafe-logo.dim_256x256.png)",
+  "existing_features": [
+    {
+      "id": "feature-implement-a-menu-management-screen-where-caf-staff-can-add-edit-and-delete-menu-items-each-item-must-have-a-name-price-and-category-e-g-cold-coffee-refreshers-snacks-hot-drinks-etc-items-should-be-grouped-and-displayed-by-category",
+      "title": "Implement a Menu Management screen where café staff can add, edit, and delete menu items. Each item must have a name, price, and category (e.g., Cold Coffee, Refreshers, Snacks, Hot Drinks, etc.). Items should be grouped and displayed by category.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-an-order-taking-screen-that-displays-the-full-menu-grouped-by-category-staff-can-tap-click-items-to-add-them-to-the-current-order-and-adjust-each-item-s-quantity-increment-decrement-remove-the-order-summary-panel-must-show-each-selected-item-its-quantity-and-line-total",
+      "title": "Implement an Order Taking screen that displays the full menu grouped by category. Staff can tap/click items to add them to the current order and adjust each item's quantity (increment, decrement, remove). The order summary panel must show each selected item, its quantity, and line total.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-automatically-calculate-and-display-subtotal-tax-configurable-percentage-optional-discount-flat-amount-or-percentage-and-final-total-for-the-current-order-tax-rate-and-discount-must-be-editable-before-finalizing-the-bill",
+      "title": "Automatically calculate and display subtotal, tax (configurable percentage), optional discount (flat amount or percentage), and final total for the current order. Tax rate and discount must be editable before finalizing the bill.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-generate-a-clean-print-friendly-bill-layout-when-an-order-is-finalized-the-bill-must-include-caf-name-date-and-time-order-items-with-quantities-and-prices-subtotal-tax-discount-if-any-and-final-total-provide-a-print-bill-button-that-triggers-the-browser-s-print-dialog-finalized-orders-must-be-saved-as-sales-records-in-the-backend",
+      "title": "Generate a clean, print-friendly bill layout when an order is finalized. The bill must include: café name, date and time, order items with quantities and prices, subtotal, tax, discount (if any), and final total. Provide a 'Print Bill' button that triggers the browser's print dialog. Finalized orders must be saved as sales records in the backend.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-a-sales-reports-screen-with-three-views-1-total-daily-sales-summary-for-today-2-item-wise-sales-showing-quantity-sold-and-revenue-per-item-and-3-date-wise-sales-history-listing-total-revenue-per-day-allow-filtering-the-date-wise-view-by-a-date-range",
+      "title": "Implement a Sales Reports screen with three views: (1) Total daily sales summary for today, (2) Item-wise sales showing quantity sold and revenue per item, and (3) Date-wise sales history listing total revenue per day. Allow filtering the date-wise view by a date range.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-apply-a-warm-caf-inspired-visual-theme-throughout-the-app-use-earthy-tones-e-g-espresso-browns-cream-warm-amber-clean-sans-serif-typography-and-a-mobile-first-layout-with-large-tap-targets-navigation-should-be-bottom-tab-style-suitable-for-one-handed-phone-use-the-interface-must-feel-fast-and-uncluttered-for-staff-use-during-rush-hours",
+      "title": "Apply a warm, café-inspired visual theme throughout the app. Use earthy tones (e.g., espresso browns, cream, warm amber), clean sans-serif typography, and a mobile-first layout with large tap targets. Navigation should be bottom-tab style suitable for one-handed phone use. The interface must feel fast and uncluttered for staff use during rush hours.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Add, edit, and delete menu items with categories and prices",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Order taking: select menu items, adjust quantities",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Auto-calculate subtotal, tax, discount, and final total",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Generate clean print-friendly bill layout (browser print as Bluetooth printer alternative)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Daily sales dashboard with total, item-wise, and date-wise reports",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Offline functionality with local data storage",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "Café Billing & Menu Manager",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

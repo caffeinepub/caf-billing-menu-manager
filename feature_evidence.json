@@ -1,0 +1,139 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-implement-a-menu-management-screen-where-caf-staff-can-add-edit-and-delete-menu-items-each-item-must-have-a-name-price-and-category-e-g-cold-coffee-refreshers-snacks-hot-drinks-etc-items-should-be-grouped-and-displayed-by-category",
+      "featureTitle": "Implement a Menu Management screen where café staff can add, edit, and delete menu items. Each item must have a name, price, and category (e.g., Cold Coffee, Refreshers, Snacks, Hot Drinks, etc.). Items should be grouped and displayed by category.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/layout/AppLayout.tsx",
+        "frontend/src/components/layout/Navigation.tsx",
+        "frontend/src/components/menu/DeleteMenuItemDialog.tsx",
+        "frontend/src/components/menu/MenuCategorySection.tsx",
+        "frontend/src/components/menu/MenuItemForm.tsx",
+        "frontend/src/pages/MenuManagement.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-an-order-taking-screen-that-displays-the-full-menu-grouped-by-category-staff-can-tap-click-items-to-add-them-to-the-current-order-and-adjust-each-item-s-quantity-increment-decrement-remove-the-order-summary-panel-must-show-each-selected-item-its-quantity-and-line-total",
+      "featureTitle": "Implement an Order Taking screen that displays the full menu grouped by category. Staff can tap/click items to add them to the current order and adjust each item's quantity (increment, decrement, remove). The order summary panel must show each selected item, its quantity, and line total.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/order/MenuItemCard.tsx",
+        "frontend/src/components/order/OrderItemRow.tsx",
+        "frontend/src/components/order/OrderSummaryPanel.tsx",
+        "frontend/src/hooks/useOrderState.ts",
+        "frontend/src/pages/OrderTaking.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-automatically-calculate-and-display-subtotal-tax-configurable-percentage-optional-discount-flat-amount-or-percentage-and-final-total-for-the-current-order-tax-rate-and-discount-must-be-editable-before-finalizing-the-bill",
+      "featureTitle": "Automatically calculate and display subtotal, tax (configurable percentage), optional discount (flat amount or percentage), and final total for the current order. Tax rate and discount must be editable before finalizing the bill.",
+      "files": [
+        "frontend/src/components/order/OrderTotalsPanel.tsx",
+        "frontend/src/hooks/useOrderState.ts",
+        "frontend/src/pages/OrderTaking.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-generate-a-clean-print-friendly-bill-layout-when-an-order-is-finalized-the-bill-must-include-caf-name-date-and-time-order-items-with-quantities-and-prices-subtotal-tax-discount-if-any-and-final-total-provide-a-print-bill-button-that-triggers-the-browser-s-print-dialog-finalized-orders-must-be-saved-as-sales-records-in-the-backend",
+      "featureTitle": "Generate a clean, print-friendly bill layout when an order is finalized. The bill must include: café name, date and time, order items with quantities and prices, subtotal, tax, discount (if any), and final total. Provide a 'Print Bill' button that triggers the browser's print dialog. Finalized orders must be saved as sales records in the backend.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/bill/BillItemsTable.tsx",
+        "frontend/src/components/bill/BillLayout.tsx",
+        "frontend/src/index.css",
+        "frontend/src/pages/BillView.tsx",
+        "frontend/src/pages/OrderTaking.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-a-sales-reports-screen-with-three-views-1-total-daily-sales-summary-for-today-2-item-wise-sales-showing-quantity-sold-and-revenue-per-item-and-3-date-wise-sales-history-listing-total-revenue-per-day-allow-filtering-the-date-wise-view-by-a-date-range",
+      "featureTitle": "Implement a Sales Reports screen with three views: (1) Total daily sales summary for today, (2) Item-wise sales showing quantity sold and revenue per item, and (3) Date-wise sales history listing total revenue per day. Allow filtering the date-wise view by a date range.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/reports/DailySummaryCard.tsx",
+        "frontend/src/components/reports/DateRangeFilter.tsx",
+        "frontend/src/components/reports/DateWiseSalesTable.tsx",
+        "frontend/src/components/reports/ItemWiseSalesTable.tsx",
+        "frontend/src/pages/SalesReports.tsx"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-apply-a-warm-caf-inspired-visual-theme-throughout-the-app-use-earthy-tones-e-g-espresso-browns-cream-warm-amber-clean-sans-serif-typography-and-a-mobile-first-layout-with-large-tap-targets-navigation-should-be-bottom-tab-style-suitable-for-one-handed-phone-use-the-interface-must-feel-fast-and-uncluttered-for-staff-use-during-rush-hours",
+      "featureTitle": "Apply a warm, café-inspired visual theme throughout the app. Use earthy tones (e.g., espresso browns, cream, warm amber), clean sans-serif typography, and a mobile-first layout with large tap targets. Navigation should be bottom-tab style suitable for one-handed phone use. The interface must feel fast and uncluttered for staff use during rush hours.",
+      "files": [
+        "frontend/src/components/layout/AppLayout.tsx",
+        "frontend/src/components/layout/Navigation.tsx",
+        "frontend/src/index.css",
+        "frontend/tailwind.config.js"
+      ],
+      "components": [
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-6"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

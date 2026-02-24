@@ -1,0 +1,154 @@
+{
+  "kind": "build_request",
+  "title": "Café Billing & Menu Management App",
+  "projectName": "Café Billing",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "Implement a Menu Management screen where café staff can add, edit, and delete menu items. Each item must have a name, price, and category (e.g., Cold Coffee, Refreshers, Snacks, Hot Drinks, etc.). Items should be grouped and displayed by category.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Add, edit, and delete menu items",
+          "Set item prices and categories (e.g., Cold Coffee, Refreshers, Snacks, etc.)"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Staff can open a Menu Management screen from the main navigation.",
+        "A form allows creating a new menu item with name, price, and category fields.",
+        "Existing items can be edited inline or via a modal form.",
+        "Items can be deleted with a confirmation prompt.",
+        "Items are grouped and displayed by category on the screen.",
+        "All menu data is persisted in the backend."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Implement an Order Taking screen that displays the full menu grouped by category. Staff can tap/click items to add them to the current order and adjust each item's quantity (increment, decrement, remove). The order summary panel must show each selected item, its quantity, and line total.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Select products from the menu while taking orders",
+          "Adjust quantity of each selected item"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The Order Taking screen lists all menu items grouped by category.",
+        "Tapping an item adds it to the active order with quantity 1.",
+        "Quantity can be incremented or decremented per item; decrementing to 0 removes the item.",
+        "The order summary shows item name, unit price, quantity, and line total for each item.",
+        "The order summary updates in real time as items are added or modified."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Automatically calculate and display subtotal, tax (configurable percentage), optional discount (flat amount or percentage), and final total for the current order. Tax rate and discount must be editable before finalizing the bill.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Automatically calculate subtotal, tax, discount (if applied), and final total"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Subtotal is the sum of all line totals in the current order.",
+        "Tax is applied as a configurable percentage of the subtotal.",
+        "Discount can be entered as a flat amount or a percentage and applied before or after tax.",
+        "Final total reflects subtotal + tax − discount.",
+        "All values update instantly when the order or discount/tax fields change."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Generate a clean, print-friendly bill layout when an order is finalized. The bill must include: café name, date and time, order items with quantities and prices, subtotal, tax, discount (if any), and final total. Provide a 'Print Bill' button that triggers the browser's print dialog. Finalized orders must be saved as sales records in the backend.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Generate a clean bill layout",
+          "Transfer the bill data via Bluetooth",
+          "Print the receipt instantly"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A 'Finalize Order' action generates a bill view with all required fields.",
+        "The bill layout is clean and readable in a narrow print format (receipt-style).",
+        "A 'Print Bill' button opens the browser print dialog with only the bill visible.",
+        "After finalization, the order is saved as a sales record with a timestamp.",
+        "The order taking screen resets after a bill is finalized."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Implement a Sales Reports screen with three views: (1) Total daily sales summary for today, (2) Item-wise sales showing quantity sold and revenue per item, and (3) Date-wise sales history listing total revenue per day. Allow filtering the date-wise view by a date range.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Total daily sales",
+          "Item-wise sales",
+          "Date-wise sales history"
+        ]
+      },
+      "acceptanceCriteria": [
+        "The Reports screen is accessible from the main navigation.",
+        "Today's total sales (number of orders and total revenue) are shown prominently.",
+        "A table or list shows each menu item with total quantity sold and total revenue.",
+        "A date-wise history table shows revenue and order count per day.",
+        "A date range picker filters the date-wise history.",
+        "All report data is derived from persisted sales records in the backend."
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Apply a warm, café-inspired visual theme throughout the app. Use earthy tones (e.g., espresso browns, cream, warm amber), clean sans-serif typography, and a mobile-first layout with large tap targets. Navigation should be bottom-tab style suitable for one-handed phone use. The interface must feel fast and uncluttered for staff use during rush hours.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "simple, fast, user-friendly interface suitable for café staff during rush hours"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Color palette uses earthy/warm tones (browns, cream, amber) consistently across all screens.",
+        "Typography is a clean, legible sans-serif font at comfortable sizes for mobile.",
+        "Navigation uses a bottom tab bar with icons and labels for Menu, Order, Reports.",
+        "All interactive elements (buttons, item cards) have large tap targets (min 44px).",
+        "No cluttered UI; each screen focuses on a single task."
+      ]
+    }
+  ],
+  "constraints": [
+    "Bluetooth printer connectivity is not supported; browser print dialog is the only print mechanism.",
+    "All data must be persisted in the Motoko backend canister (not browser localStorage) to ensure durability.",
+    "The app must be fully functional without any external internet dependencies at runtime."
+  ],
+  "nonGoals": [
+    "Bluetooth or any native device API integration.",
+    "User authentication or multi-staff accounts.",
+    "Online payment processing.",
+    "Inventory tracking or stock management.",
+    "Multi-branch or cloud sync features."
+  ],
+  "imageRequirements": {
+    "required": [
+      "Warm café-themed logo mark with a stylized coffee cup and steam, suitable for app header (cafe-logo.dim_256x256.png)"
+    ],
+    "edits": []
+  }
+}
