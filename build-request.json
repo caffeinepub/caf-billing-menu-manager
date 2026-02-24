@@ -1,90 +1,39 @@
 {
   "kind": "build_request",
-  "title": "Remove tax from billing, order screen, and reports",
+  "title": "Reset all sales and order records for a fresh start",
   "projectName": "Simple Sips Cafe",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-14",
-      "text": "Remove tax entirely from the order totals display and calculation. In OrderTotalsPanel, remove the editable tax rate input and the tax line. In useOrderState hook, remove the taxRate state and taxAmount computation — the final total should be subtotal minus discount only.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "remove tax as of now"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The OrderTotalsPanel no longer shows a tax rate input or a tax line",
-        "The final total displayed is subtotal minus any discount (no tax added)",
-        "Discount controls remain functional"
-      ]
-    },
-    {
-      "id": "REQ-15",
-      "text": "Remove tax from the BillLayout print receipt. The printed bill must no longer display a tax line or tax amount. The totals section should show: subtotal, discount (if any), and final total only.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "remove tax as of now"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Printed bill does not include a tax row",
-        "Bill totals show subtotal, optional discount, and final total",
-        "Print layout remains clean and well-formatted"
-      ]
-    },
-    {
-      "id": "REQ-16",
-      "text": "Update the backend order finalization logic to store orders without a tax field (or store tax as zero). The finalizeOrder function must compute the total as subtotal minus discount, without applying any tax percentage.",
+      "id": "REQ-18",
+      "text": "Clear all existing finalized order and sales records from the backend so the app starts with zero historical data. The menu items must remain intact. After the reset, all sales report views (daily summary, item-wise, date-wise) should show empty/zero states.",
       "target": "backend",
       "source": {
         "messageIds": [
           "msg-4"
         ],
         "quotes": [
-          "remove tax as of now"
+          "give me fresh without any record so that i can display it"
         ]
       },
       "acceptanceCriteria": [
-        "Finalized orders saved to the backend have tax stored as 0 or removed from the record",
-        "Total in stored sales records equals subtotal minus discount",
-        "Existing order history remains accessible without errors"
-      ]
-    },
-    {
-      "id": "REQ-17",
-      "text": "Remove the 'tax collected' stat card from the DailySummaryCard component on the Sales Reports screen. The daily summary should only show total revenue and items sold.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "remove tax as of now"
-        ]
-      },
-      "acceptanceCriteria": [
-        "DailySummaryCard no longer displays a 'Tax Collected' stat",
-        "Remaining stat cards (revenue, items sold) are displayed correctly"
+        "All previously saved orders are removed from backend storage.",
+        "The daily summary card shows ₹0 revenue and 0 items sold.",
+        "The item-wise sales table is empty.",
+        "The date-wise sales table is empty.",
+        "All menu items (10 categories, ~72 items) remain fully intact and visible on the Menu Management and Order Taking screens.",
+        "New orders can be placed and saved successfully after the reset."
       ]
     }
   ],
   "constraints": [
-    "Do not remove or break the discount functionality (flat or percentage)",
-    "Do not modify any files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
-    "Preserve all existing menu data, order history, and sales records in the backend"
+    "Do not delete or modify any menu items — only order/sales records should be cleared.",
+    "Do not reset or alter the backend menu seeding logic."
   ],
   "nonGoals": [
-    "Adding any new features beyond removing tax",
-    "Changing the visual theme or layout beyond removing tax-related UI elements",
-    "Modifying menu management functionality"
+    "Resetting menu items or categories.",
+    "Changing any UI layout or visual theme.",
+    "Modifying order-taking or billing calculation logic."
   ],
   "imageRequirements": {
     "required": [],

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 17,
+  "projectStateVersion": 19,
   "summary": "A café billing and menu management web app. Features: digital menu management (add/edit/delete items with categories and prices), order taking with quantity adjustments, automatic bill calculation (subtotal, tax, discount, total), print-friendly bill layout, daily sales dashboard with item-wise and date-wise reports. Works offline with local data storage. Menu pre-populated with 10 categories: Tea (11 items), Coffee (5 items), Sandwich (4 items), Toast (4 items), Light Snacks (11 items), Momos (10 items), Burgers (3 items), Starters (8 items), Refreshers (3 items), and Combo (13 items) with exact names and prices as provided by the user.",
   "architectural_notes": [
     "Bluetooth thermal POS printer connectivity is not feasible in web apps; browser print function used as alternative",
@@ -206,6 +206,20 @@
       "summary": "Update the backend order finalization logic to store orders without a tax field (or store tax as zero). The finalizeOrder function must compute the total as subtotal minus discount, without applying any tax percentage.",
       "reqIds": [
         "REQ-16"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-17",
+      "summary": "Clear/reset all existing data records (orders, sales) so the app starts fresh with no prior records",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-18",
+      "summary": "Clear all existing finalized order and sales records from the backend so the app starts with zero historical data. The menu items must remain intact. After the reset, all sales report views (daily summary, item-wise, date-wise) should show empty/zero states.",
+      "reqIds": [
+        "REQ-18"
       ],
       "status": "pending"
     }

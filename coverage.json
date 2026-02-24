@@ -1,56 +1,21 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-24T20:50:27.901Z",
+  "generatedAt": "2026-02-24T20:54:37.724Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
-    "implemented": 3,
+    "total": 1,
+    "implemented": 0,
     "items": [
       {
-        "id": "REQ-14",
-        "summary": "Remove tax entirely from the order totals display and calculation. In OrderTotalsPanel, remove the editable tax rate input and the tax line. In useOrderState hook, remove the taxRate state and taxAmount computation — the final total should be subtotal minus discount only.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/useOrderState.ts",
-          "frontend/src/components/order/OrderTotalsPanel.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/useOrderState.ts",
-          "frontend/src/components/order/OrderTotalsPanel.tsx"
-        ]
-      },
-      {
-        "id": "REQ-15",
-        "summary": "Remove tax from the BillLayout print receipt. The printed bill must no longer display a tax line or tax amount. The totals section should show: subtotal, discount (if any), and final total only.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/bill/BillLayout.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/bill/BillLayout.tsx"
-        ]
-      },
-      {
-        "id": "REQ-16",
-        "summary": "Update the backend order finalization logic to store orders without a tax field (or store tax as zero). The finalizeOrder function must compute the total as subtotal minus discount, without applying any tax percentage.",
+        "id": "REQ-18",
+        "summary": "Clear all existing finalized order and sales records from the backend so the app starts with zero historical data. The menu items must remain intact. After the reset, all sales report views (daily summary, item-wise, date-wise) should show empty/zero states.",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
-      },
-      {
-        "id": "REQ-17",
-        "summary": "Remove the 'tax collected' stat card from the DailySummaryCard component on the Sales Reports screen. The daily summary should only show total revenue and items sold.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/reports/DailySummaryCard.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/reports/DailySummaryCard.tsx"
-        ]
       }
     ]
   },
@@ -59,20 +24,11 @@
     "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
-    "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
-    "frontend/src/components/bill/BillLayout.tsx",
-    "frontend/src/components/order/OrderTotalsPanel.tsx",
-    "frontend/src/components/reports/DailySummaryCard.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useOrderState.ts",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/BillView.tsx",
-    "frontend/src/pages/OrderTaking.tsx",
-    "frontend/src/pages/SalesReports.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

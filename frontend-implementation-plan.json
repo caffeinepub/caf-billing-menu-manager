@@ -1,59 +1,6 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Remove tax from billing, order screen, and reports",
-  "requirements": [
-    {
-      "id": "REQ-14",
-      "summary": "Remove tax rate input and tax computation from order totals. Final total should be subtotal minus discount only.",
-      "acceptanceCriteria": [
-        "The OrderTotalsPanel no longer shows a tax rate input or a tax line",
-        "The final total displayed is subtotal minus any discount (no tax added)",
-        "Discount controls remain functional"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/hooks/useOrderState.ts",
-          "operation": "modify",
-          "description": "Remove taxRate state and taxAmount computation from the hook. Update the total calculation to be subtotal minus discountAmount only, removing any tax-related logic."
-        },
-        {
-          "path": "frontend/src/components/order/OrderTotalsPanel.tsx",
-          "operation": "modify",
-          "description": "Remove the tax rate input field and the tax amount display row from the totals breakdown. Keep subtotal, discount controls (flat/percentage), and final total display. Update the component to no longer accept or display taxRate and taxAmount props."
-        }
-      ]
-    },
-    {
-      "id": "REQ-15",
-      "summary": "Remove tax line from printed bill receipt. Show only subtotal, discount, and final total.",
-      "acceptanceCriteria": [
-        "Printed bill does not include a tax row",
-        "Bill totals show subtotal, optional discount, and final total",
-        "Print layout remains clean and well-formatted"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/bill/BillLayout.tsx",
-          "operation": "modify",
-          "description": "Remove the tax row from the totals breakdown section. The printed receipt should display subtotal, discount (if any), and final total only. Ensure spacing and formatting remain clean after removing the tax line."
-        }
-      ]
-    },
-    {
-      "id": "REQ-17",
-      "summary": "Remove tax collected stat card from daily summary on Sales Reports screen.",
-      "acceptanceCriteria": [
-        "DailySummaryCard no longer displays a 'Tax Collected' stat",
-        "Remaining stat cards (revenue, items sold) are displayed correctly"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/reports/DailySummaryCard.tsx",
-          "operation": "modify",
-          "description": "Remove the third stat card showing 'Tax Collected' from the component. Display only the total revenue and items sold stat cards. Adjust the grid layout if necessary to maintain visual balance with two cards instead of three."
-        }
-      ]
-    }
-  ]
+  "title": "Reset all sales and order records for a fresh start",
+  "requirements": []
 }
