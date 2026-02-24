@@ -1,28 +1,23 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-24T20:36:22.936Z",
-  "summary": "The diff addresses REQ-13 by fixing the menu data loading issue. Key changes include: removing the `!isFetching` guard from `useMenuItemsByCategory` so the query runs when the actor is ready, adding retry logic with exponential backoff, adding defensive `safeItems` guards in frontend components, and implementing proper error/loading states with refetch buttons on both MenuManagement and OrderTaking pages. The backend `getMenuItemsByCategory` query is present. However, there is no evidence of re-seeding logic or migration fix to restore the 72 items across 10 categories if the store was empty.",
-  "missing_requirements": [
-    {
-      "id": "REQ-13",
-      "requirement": "If the menu store was empty due to a migration issue, re-seeding or re-migration restores all 72 items across 10 categories.",
-      "reason": "The diff shows no seed data initialization, migration guard, or re-seeding logic in the backend (main.mo). The backend uses Map.empty<Nat, MenuItem>() with no populate/seed call, meaning an empty store would remain empty after deployment.",
-      "evidence": [
-        "backend/main.mo"
-      ]
-    }
-  ],
+  "generatedAt": "2026-02-24T20:50:27.898Z",
+  "summary": "All four requirements are implemented in the diff. REQ-14 is addressed by removing taxRate/taxAmount from useOrderState.ts and removing the tax input/line from OrderTotalsPanel.tsx. REQ-15 is addressed by removing the tax row from BillLayout.tsx. REQ-16 is addressed by updating backend/main.mo to compute total as subtotal minus discount (no tax) and adding backend/migration.mo to migrate existing records. REQ-17 is addressed by reducing DailySummaryCard.tsx to only two stat cards (revenue and items sold). No missing requirements or hallucinated features were detected.",
+  "missing_requirements": [],
   "hallucinated_features": [],
-  "confidence": 0.82,
+  "confidence": 0.97,
   "changed_files": [
     "backend/main.mo",
+    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/components/menu/MenuCategorySection.tsx",
-    "frontend/src/components/order/MenuCategoryAccordion.tsx",
+    "frontend/src/components/bill/BillLayout.tsx",
+    "frontend/src/components/order/OrderTotalsPanel.tsx",
+    "frontend/src/components/reports/DailySummaryCard.tsx",
+    "frontend/src/hooks/useOrderState.ts",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/MenuManagement.tsx",
+    "frontend/src/pages/BillView.tsx",
     "frontend/src/pages/OrderTaking.tsx",
+    "frontend/src/pages/SalesReports.tsx",
     "project_state.json"
   ]
 }

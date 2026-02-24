@@ -1,19 +1,18 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { TrendingUp, ShoppingBag, Receipt } from 'lucide-react';
+import { TrendingUp, ShoppingBag } from 'lucide-react';
 import { formatCurrencyBigInt } from '@/lib/utils';
 
 interface DailySummaryCardProps {
   total: bigint;
-  tax: bigint;
   itemCount: bigint;
   isLoading?: boolean;
 }
 
-export default function DailySummaryCard({ total, tax, itemCount, isLoading }: DailySummaryCardProps) {
+export default function DailySummaryCard({ total, itemCount, isLoading }: DailySummaryCardProps) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-3 gap-3">
-        {[1, 2, 3].map(i => (
+      <div className="grid grid-cols-2 gap-3">
+        {[1, 2].map(i => (
           <Card key={i} className="animate-pulse">
             <CardContent className="p-4">
               <div className="h-8 bg-muted rounded mb-2" />
@@ -40,17 +39,10 @@ export default function DailySummaryCard({ total, tax, itemCount, isLoading }: D
       color: 'text-accent-foreground',
       bg: 'bg-accent/20',
     },
-    {
-      label: 'Tax Collected',
-      value: formatCurrencyBigInt(tax),
-      icon: Receipt,
-      color: 'text-muted-foreground',
-      bg: 'bg-muted',
-    },
   ];
 
   return (
-    <div className="grid grid-cols-3 gap-3">
+    <div className="grid grid-cols-2 gap-3">
       {stats.map(stat => (
         <Card key={stat.label} className="shadow-xs">
           <CardContent className="p-3">

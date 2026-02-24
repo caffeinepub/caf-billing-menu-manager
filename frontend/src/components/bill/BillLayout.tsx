@@ -5,8 +5,6 @@ import type { ActiveOrderItem, DiscountType } from '../../hooks/useOrderState';
 interface BillLayoutProps {
   items: ActiveOrderItem[];
   subtotal: number;
-  taxRate: number;
-  taxAmount: number;
   discountType: DiscountType;
   discountValue: number;
   discountAmount: number;
@@ -18,8 +16,6 @@ interface BillLayoutProps {
 export default function BillLayout({
   items,
   subtotal,
-  taxRate,
-  taxAmount,
   discountType,
   discountValue,
   discountAmount,
@@ -56,10 +52,6 @@ export default function BillLayout({
         <div className="flex justify-between">
           <span>Subtotal</span>
           <span>{formatCurrency(subtotal)}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Tax ({taxRate}%)</span>
-          <span>{formatCurrency(taxAmount)}</span>
         </div>
         {discountAmount > 0 && (
           <div className="flex justify-between">

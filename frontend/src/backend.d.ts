@@ -14,9 +14,9 @@ export interface MenuItem {
     price: bigint;
 }
 export interface Order {
-    tax: bigint;
     total: bigint;
     timestamp: bigint;
+    discount: bigint;
     items: Array<OrderItem>;
     subtotal: bigint;
 }
@@ -30,12 +30,12 @@ export interface backendInterface {
     addMenuItem(name: string, price: bigint, category: string): Promise<bigint>;
     deleteMenuItem(id: bigint): Promise<void>;
     editMenuItem(id: bigint, name: string, price: bigint, category: string): Promise<void>;
-    finalizeOrder(orderItems: Array<OrderItem>): Promise<Order>;
+    finalizeOrder(orderItems: Array<OrderItem>, discount: bigint): Promise<Order>;
     getAllMenuItems(): Promise<Array<MenuItem>>;
     getDailySalesSummary(): Promise<{
-        tax: bigint;
         total: bigint;
         itemCount: bigint;
+        discount: bigint;
     }>;
     getDateWiseSalesHistory(startDate: bigint, endDate: bigint): Promise<Array<Order>>;
     getItemWiseSales(): Promise<Array<[string, bigint, bigint]>>;

@@ -1,48 +1,57 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix menu failing to load",
+  "title": "Remove tax from billing, order screen, and reports",
   "requirements": [
     {
-      "id": "REQ-13",
-      "summary": "Investigate and fix menu data loading failures on Menu Management and Order Taking screens by ensuring proper error handling, loading states, and successful data retrieval from backend queries",
+      "id": "REQ-14",
+      "summary": "Remove tax rate input and tax computation from order totals. Final total should be subtotal minus discount only.",
       "acceptanceCriteria": [
-        "The Menu Management screen loads and displays all menu items grouped by their categories without any error state.",
-        "The Order Taking screen loads and displays all menu items grouped by category in the accordion sections.",
-        "No 'failed to load' or error message is shown on either page under normal operation.",
-        "The backend getMenuItems (or equivalent) query returns all seeded menu items successfully.",
-        "If the menu store was empty due to a migration issue, re-seeding or re-migration restores all 72 items across 10 categories."
+        "The OrderTotalsPanel no longer shows a tax rate input or a tax line",
+        "The final total displayed is subtotal minus any discount (no tax added)",
+        "Discount controls remain functional"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/hooks/useOrderState.ts",
           "operation": "modify",
-          "description": "Review and enhance the useGetAllMenuItems and useGetMenuItemsByCategory query hooks to ensure proper error handling, retry logic, and refetch configuration. Add explicit enabled conditions and staleTime settings to prevent unnecessary refetches. Ensure query keys are stable and properly typed."
+          "description": "Remove taxRate state and taxAmount computation from the hook. Update the total calculation to be subtotal minus discountAmount only, removing any tax-related logic."
         },
         {
-          "path": "frontend/src/hooks/useActor.ts",
+          "path": "frontend/src/components/order/OrderTotalsPanel.tsx",
           "operation": "modify",
-          "description": "Verify the actor initialization logic handles all edge cases including network failures, authentication errors, and actor unavailability. Add comprehensive error logging and ensure the actor is properly cached and invalidated. Confirm queryClient invalidation triggers dependent queries correctly."
-        },
+          "description": "Remove the tax rate input field and the tax amount display row from the totals breakdown. Keep subtotal, discount controls (flat/percentage), and final total display. Update the component to no longer accept or display taxRate and taxAmount props."
+        }
+      ]
+    },
+    {
+      "id": "REQ-15",
+      "summary": "Remove tax line from printed bill receipt. Show only subtotal, discount, and final total.",
+      "acceptanceCriteria": [
+        "Printed bill does not include a tax row",
+        "Bill totals show subtotal, optional discount, and final total",
+        "Print layout remains clean and well-formatted"
+      ],
+      "file_operations": [
         {
-          "path": "frontend/src/pages/MenuManagement.tsx",
+          "path": "frontend/src/components/bill/BillLayout.tsx",
           "operation": "modify",
-          "description": "Enhance error handling and loading state display for menu data fetching. Add detailed error messages that distinguish between network errors, actor initialization failures, and empty data states. Ensure the useGetMenuItemsByCategory hook is called correctly and results are properly handled. Add a manual refetch button for recovery from transient errors."
-        },
+          "description": "Remove the tax row from the totals breakdown section. The printed receipt should display subtotal, discount (if any), and final total only. Ensure spacing and formatting remain clean after removing the tax line."
+        }
+      ]
+    },
+    {
+      "id": "REQ-17",
+      "summary": "Remove tax collected stat card from daily summary on Sales Reports screen.",
+      "acceptanceCriteria": [
+        "DailySummaryCard no longer displays a 'Tax Collected' stat",
+        "Remaining stat cards (revenue, items sold) are displayed correctly"
+      ],
+      "file_operations": [
         {
-          "path": "frontend/src/pages/OrderTaking.tsx",
+          "path": "frontend/src/components/reports/DailySummaryCard.tsx",
           "operation": "modify",
-          "description": "Improve error handling and loading states for menu data in the order taking flow. Ensure the menu accordion displays appropriate messages when data fails to load versus when data is empty. Add retry capability and clear error messaging. Verify the useGetMenuItemsByCategory hook integration and ensure grouped menu items are rendered correctly."
-        },
-        {
-          "path": "frontend/src/components/menu/MenuCategorySection.tsx",
-          "operation": "modify",
-          "description": "Add defensive checks for undefined or null menu items array. Ensure the component gracefully handles edge cases where category data is malformed or missing. Add console logging for debugging menu data structure issues."
-        },
-        {
-          "path": "frontend/src/components/order/MenuCategoryAccordion.tsx",
-          "operation": "modify",
-          "description": "Add validation for the menuItemsByCategory prop to handle undefined, null, or empty arrays gracefully. Ensure accordion sections render correctly even when data structure is unexpected. Add fallback UI for malformed category data and improve error boundary handling."
+          "description": "Remove the third stat card showing 'Tax Collected' from the component. Display only the total revenue and items sold stat cards. Adjust the grid layout if necessary to maintain visual balance with two cards instead of three."
         }
       ]
     }

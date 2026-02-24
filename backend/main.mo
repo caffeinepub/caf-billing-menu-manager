@@ -7,7 +7,9 @@ import Array "mo:core/Array";
 import List "mo:core/List";
 import Runtime "mo:core/Runtime";
 import Iter "mo:core/Iter";
+import Migration "migration";
 
+(with migration = Migration.run)
 actor {
   type MenuItem = {
     id : Nat;
@@ -26,7 +28,7 @@ actor {
   type Order = {
     items : [OrderItem];
     subtotal : Nat;
-    tax : Nat;
+    discount : Nat;
     total : Nat;
     timestamp : Int;
   };
@@ -60,9 +62,6 @@ actor {
   // Store menu items and orders in persistent Map structures
   let menuItems = Map.empty<Nat, MenuItem>();
   let orders = List.empty<Order>();
-
-  // Tax rate as a percentage (e.g., 5%)
-  let taxRate = 5;
 
   // Constant for one day in nanoseconds
   let dayInNanoseconds : Int = 24 * 60 * 60 * 1000000000;
@@ -136,8 +135,8 @@ actor {
     menuItems.values().toArray();
   };
 
-  // Finalize Order & Print Bill
-  public shared ({ caller }) func finalizeOrder(orderItems : [OrderItem]) : async Order {
+  // Order Finalization - Tax No Longer Applied
+  public shared ({ caller }) func finalizeOrder(orderItems : [OrderItem], discount : Nat) : async Order {
     let subtotal = orderItems.foldLeft(
       0,
       func(acc, item) {
@@ -145,14 +144,14 @@ actor {
       },
     );
 
-    let tax = (subtotal * taxRate) / 100;
-    let total = subtotal + tax;
+    // Calculate final total as subtotal minus discount (no tax)
+    let total = if (discount > subtotal) { 0 } else { subtotal - discount };
     let timestamp = 0; // Placeholder value until time support is implemented
 
     let order : Order = {
       items = orderItems;
       subtotal;
-      tax;
+      discount;
       total;
       timestamp;
     };
@@ -165,27 +164,27 @@ actor {
   public query ({ caller }) func getDailySalesSummary() : async {
     itemCount : Nat;
     total : Nat;
-    tax : Nat;
+    discount : Nat;
   } {
     let today = 0 / dayInNanoseconds; // Placeholder value until time support is implemented
 
     var itemCount = 0;
     var total = 0;
-    var tax = 0;
+    var discount = 0;
 
     for (order in orders.values()) {
       let orderDay = order.timestamp / dayInNanoseconds;
       if (orderDay == today) {
         itemCount += order.items.size();
         total += order.total;
-        tax += order.tax;
+        discount += order.discount;
       };
     };
 
     {
       itemCount;
       total;
-      tax;
+      discount;
     };
   };
 

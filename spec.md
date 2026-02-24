@@ -1,13 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Fix the menu failing to load on the Menu Management and Order Taking screens.
+**Goal:** Remove tax entirely from the Simple Sips Cafe application — including the order screen, printed bill, backend order records, and sales reports.
 
 **Planned changes:**
-- Investigate and fix the backend query responsible for fetching all menu items so it returns data correctly.
-- Resolve any actor initialization, deserialization, or migration errors preventing menu data from loading.
-- Ensure the frontend MenuManagement page successfully retrieves and displays menu items grouped by category.
-- Ensure the frontend OrderTaking page successfully retrieves and displays menu items grouped by category.
-- Re-seed or re-migrate menu data if the store was left empty due to a migration issue, restoring all items across categories.
+- Remove the tax rate input and tax line from `OrderTotalsPanel`; update `useOrderState` so the final total is subtotal minus discount only
+- Remove the tax line from the `BillLayout` print receipt so it shows only subtotal, optional discount, and final total
+- Update backend `finalizeOrder` logic to store tax as 0 (or omit it) and compute total as subtotal minus discount
+- Remove the "Tax Collected" stat card from `DailySummaryCard` on the Sales Reports screen
 
-**User-visible outcome:** The Menu Management and Order Taking screens both load and display all menu items grouped by category with no error messages.
+**User-visible outcome:** Tax no longer appears anywhere in the app — not on the order screen, printed receipts, or sales reports. Totals are calculated and displayed as subtotal minus discount only.

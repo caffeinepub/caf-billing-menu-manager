@@ -15,9 +15,9 @@ export const OrderItem = IDL.Record({
   'menuItemId' : IDL.Nat,
 });
 export const Order = IDL.Record({
-  'tax' : IDL.Nat,
   'total' : IDL.Nat,
   'timestamp' : IDL.Int,
+  'discount' : IDL.Nat,
   'items' : IDL.Vec(OrderItem),
   'subtotal' : IDL.Nat,
 });
@@ -32,15 +32,15 @@ export const idlService = IDL.Service({
   'addMenuItem' : IDL.Func([IDL.Text, IDL.Nat, IDL.Text], [IDL.Nat], []),
   'deleteMenuItem' : IDL.Func([IDL.Nat], [], []),
   'editMenuItem' : IDL.Func([IDL.Nat, IDL.Text, IDL.Nat, IDL.Text], [], []),
-  'finalizeOrder' : IDL.Func([IDL.Vec(OrderItem)], [Order], []),
+  'finalizeOrder' : IDL.Func([IDL.Vec(OrderItem), IDL.Nat], [Order], []),
   'getAllMenuItems' : IDL.Func([], [IDL.Vec(MenuItem)], ['query']),
   'getDailySalesSummary' : IDL.Func(
       [],
       [
         IDL.Record({
-          'tax' : IDL.Nat,
           'total' : IDL.Nat,
           'itemCount' : IDL.Nat,
+          'discount' : IDL.Nat,
         }),
       ],
       ['query'],
@@ -72,9 +72,9 @@ export const idlFactory = ({ IDL }) => {
     'menuItemId' : IDL.Nat,
   });
   const Order = IDL.Record({
-    'tax' : IDL.Nat,
     'total' : IDL.Nat,
     'timestamp' : IDL.Int,
+    'discount' : IDL.Nat,
     'items' : IDL.Vec(OrderItem),
     'subtotal' : IDL.Nat,
   });
@@ -89,15 +89,15 @@ export const idlFactory = ({ IDL }) => {
     'addMenuItem' : IDL.Func([IDL.Text, IDL.Nat, IDL.Text], [IDL.Nat], []),
     'deleteMenuItem' : IDL.Func([IDL.Nat], [], []),
     'editMenuItem' : IDL.Func([IDL.Nat, IDL.Text, IDL.Nat, IDL.Text], [], []),
-    'finalizeOrder' : IDL.Func([IDL.Vec(OrderItem)], [Order], []),
+    'finalizeOrder' : IDL.Func([IDL.Vec(OrderItem), IDL.Nat], [Order], []),
     'getAllMenuItems' : IDL.Func([], [IDL.Vec(MenuItem)], ['query']),
     'getDailySalesSummary' : IDL.Func(
         [],
         [
           IDL.Record({
-            'tax' : IDL.Nat,
             'total' : IDL.Nat,
             'itemCount' : IDL.Nat,
+            'discount' : IDL.Nat,
           }),
         ],
         ['query'],

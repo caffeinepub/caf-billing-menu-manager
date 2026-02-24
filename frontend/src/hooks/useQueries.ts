@@ -73,9 +73,9 @@ export function useFinalizeOrder() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (orderItems: OrderItem[]) => {
+    mutationFn: async ({ orderItems, discount }: { orderItems: OrderItem[]; discount: bigint }) => {
       if (!actor) throw new Error('Actor not initialized');
-      return actor.finalizeOrder(orderItems);
+      return actor.finalizeOrder(orderItems, discount);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dailySalesSummary'] });
@@ -90,10 +90,10 @@ export function useFinalizeOrder() {
 export function useDailySalesSummary() {
   const { actor, isFetching } = useActor();
 
-  return useQuery<{ tax: bigint; total: bigint; itemCount: bigint }>({
+  return useQuery<{ total: bigint; itemCount: bigint; discount: bigint }>({
     queryKey: ['dailySalesSummary'],
     queryFn: async () => {
-      if (!actor) return { tax: 0n, total: 0n, itemCount: 0n };
+      if (!actor) return { total: 0n, itemCount: 0n, discount: 0n };
       return actor.getDailySalesSummary();
     },
     enabled: !!actor && !isFetching,

@@ -8,8 +8,6 @@ import type { ActiveOrderItem, DiscountType } from '../hooks/useOrderState';
 interface BillData {
   items: ActiveOrderItem[];
   subtotal: number;
-  taxRate: number;
-  taxAmount: number;
   discountType: DiscountType;
   discountValue: number;
   discountAmount: number;
@@ -88,8 +86,6 @@ export default function BillView() {
           <BillLayout
             items={billData.items}
             subtotal={billData.subtotal}
-            taxRate={billData.taxRate}
-            taxAmount={billData.taxAmount}
             discountType={billData.discountType}
             discountValue={billData.discountValue}
             discountAmount={billData.discountAmount}

@@ -17,9 +17,9 @@ export interface MenuItem {
   'price' : bigint,
 }
 export interface Order {
-  'tax' : bigint,
   'total' : bigint,
   'timestamp' : bigint,
+  'discount' : bigint,
   'items' : Array<OrderItem>,
   'subtotal' : bigint,
 }
@@ -33,11 +33,11 @@ export interface _SERVICE {
   'addMenuItem' : ActorMethod<[string, bigint, string], bigint>,
   'deleteMenuItem' : ActorMethod<[bigint], undefined>,
   'editMenuItem' : ActorMethod<[bigint, string, bigint, string], undefined>,
-  'finalizeOrder' : ActorMethod<[Array<OrderItem>], Order>,
+  'finalizeOrder' : ActorMethod<[Array<OrderItem>, bigint], Order>,
   'getAllMenuItems' : ActorMethod<[], Array<MenuItem>>,
   'getDailySalesSummary' : ActorMethod<
     [],
-    { 'tax' : bigint, 'total' : bigint, 'itemCount' : bigint }
+    { 'total' : bigint, 'itemCount' : bigint, 'discount' : bigint }
   >,
   'getDateWiseSalesHistory' : ActorMethod<[bigint, bigint], Array<Order>>,
   'getItemWiseSales' : ActorMethod<[], Array<[string, bigint, bigint]>>,

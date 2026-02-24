@@ -20,18 +20,15 @@ export default function OrderTaking() {
 
   const {
     items,
-    taxRate, setTaxRate,
     discountType, setDiscountType,
     discountValue, setDiscountValue,
     addItem, updateQuantity, removeItem, clearOrder,
-    subtotal, taxAmount, discountAmount, total,
+    subtotal, discountAmount, total,
   } = useOrderState();
 
   const billDataRef = useRef<{
     items: typeof items;
     subtotal: number;
-    taxRate: number;
-    taxAmount: number;
     discountType: typeof discountType;
     discountValue: number;
     discountAmount: number;
@@ -54,13 +51,14 @@ export default function OrderTaking() {
     }));
 
     try {
-      const order = await finalizeMutation.mutateAsync(orderItems);
+      const order = await finalizeMutation.mutateAsync({
+        orderItems,
+        discount: BigInt(Math.round(discountAmount)),
+      });
 
       const billData = {
         items,
         subtotal,
-        taxRate,
-        taxAmount,
         discountType,
         discountValue,
         discountAmount,
@@ -189,13 +187,10 @@ export default function OrderTaking() {
                 <Separator />
                 <OrderTotalsPanel
                   subtotal={subtotal}
-                  taxRate={taxRate}
-                  taxAmount={taxAmount}
                   discountType={discountType}
                   discountValue={discountValue}
                   discountAmount={discountAmount}
                   total={total}
-                  onTaxRateChange={setTaxRate}
                   onDiscountTypeChange={setDiscountType}
                   onDiscountValueChange={setDiscountValue}
                 />

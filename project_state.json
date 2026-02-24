@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 15,
+  "projectStateVersion": 17,
   "summary": "A café billing and menu management web app. Features: digital menu management (add/edit/delete items with categories and prices), order taking with quantity adjustments, automatic bill calculation (subtotal, tax, discount, total), print-friendly bill layout, daily sales dashboard with item-wise and date-wise reports. Works offline with local data storage. Menu pre-populated with 10 categories: Tea (11 items), Coffee (5 items), Sandwich (4 items), Toast (4 items), Light Snacks (11 items), Momos (10 items), Burgers (3 items), Starters (8 items), Refreshers (3 items), and Combo (13 items) with exact names and prices as provided by the user.",
   "architectural_notes": [
     "Bluetooth thermal POS printer connectivity is not feasible in web apps; browser print function used as alternative",
@@ -9,7 +9,7 @@
   "known_issues": [
     "Menu fails to load (reported by user in Version 6)"
   ],
-  "isFixRequest": true,
+  "isFixRequest": false,
   "existing_features": [
     {
       "id": "feature-implement-a-menu-management-screen-where-caf-staff-can-add-edit-and-delete-menu-items-each-item-must-have-a-name-price-and-category-e-g-cold-coffee-refreshers-snacks-hot-drinks-etc-items-should-be-grouped-and-displayed-by-category",
@@ -106,6 +106,30 @@
         "REQ-13"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-remove-tax-entirely-from-the-order-totals-display-and-calculation-in-ordertotalspanel-remove-the-editable-tax-rate-input-and-the-tax-line-in-useorderstate-hook-remove-the-taxrate-state-and-taxamount-computation-the-final-total-should-be-subtotal-minus-discount-only",
+      "title": "Remove tax entirely from the order totals display and calculation. In OrderTotalsPanel, remove the editable tax rate input and the tax line. In useOrderState hook, remove the taxRate state and taxAmount computation — the final total should be subtotal minus discount only.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-tax-from-the-billlayout-print-receipt-the-printed-bill-must-no-longer-display-a-tax-line-or-tax-amount-the-totals-section-should-show-subtotal-discount-if-any-and-final-total-only",
+      "title": "Remove tax from the BillLayout print receipt. The printed bill must no longer display a tax line or tax amount. The totals section should show: subtotal, discount (if any), and final total only.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-the-tax-collected-stat-card-from-the-dailysummarycard-component-on-the-sales-reports-screen-the-daily-summary-should-only-show-total-revenue-and-items-sold",
+      "title": "Remove the 'tax collected' stat card from the DailySummaryCard component on the Sales Reports screen. The daily summary should only show total revenue and items sold.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -169,6 +193,20 @@
       "id": "AR-12",
       "summary": "Add a logo and café name/branding to the app header",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "Remove tax from the billing/order screen",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-16",
+      "summary": "Update the backend order finalization logic to store orders without a tax field (or store tax as zero). The finalizeOrder function must compute the total as subtotal minus discount, without applying any tax percentage.",
+      "reqIds": [
+        "REQ-16"
+      ],
       "status": "pending"
     }
   ],

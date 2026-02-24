@@ -1,31 +1,24 @@
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { formatCurrency } from '@/lib/utils';
 import type { DiscountType } from '../../hooks/useOrderState';
 
 interface OrderTotalsPanelProps {
   subtotal: number;
-  taxRate: number;
-  taxAmount: number;
   discountType: DiscountType;
   discountValue: number;
   discountAmount: number;
   total: number;
-  onTaxRateChange: (rate: number) => void;
   onDiscountTypeChange: (type: DiscountType) => void;
   onDiscountValueChange: (value: number) => void;
 }
 
 export default function OrderTotalsPanel({
   subtotal,
-  taxRate,
-  taxAmount,
   discountType,
   discountValue,
   discountAmount,
   total,
-  onTaxRateChange,
   onDiscountTypeChange,
   onDiscountValueChange,
 }: OrderTotalsPanelProps) {
@@ -35,25 +28,6 @@ export default function OrderTotalsPanel({
       <div className="flex justify-between text-sm">
         <span className="text-muted-foreground">Subtotal</span>
         <span className="font-medium">{formatCurrency(subtotal)}</span>
-      </div>
-
-      {/* Tax */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Tax</span>
-          <div className="flex items-center gap-1">
-            <Input
-              type="number"
-              min="0"
-              max="100"
-              value={taxRate}
-              onChange={e => onTaxRateChange(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))}
-              className="w-14 h-7 text-xs text-center px-1"
-            />
-            <span className="text-xs text-muted-foreground">%</span>
-          </div>
-        </div>
-        <span className="text-sm font-medium">{formatCurrency(taxAmount)}</span>
       </div>
 
       {/* Discount */}

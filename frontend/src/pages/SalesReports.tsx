@@ -47,7 +47,6 @@ export default function SalesReports() {
         <h3 className="font-semibold text-sm text-foreground">Today's Summary</h3>
         <DailySummaryCard
           total={dailySummary?.total ?? 0n}
-          tax={dailySummary?.tax ?? 0n}
           itemCount={dailySummary?.itemCount ?? 0n}
           isLoading={dailyLoading}
         />

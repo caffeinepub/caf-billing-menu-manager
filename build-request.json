@@ -1,38 +1,90 @@
 {
   "kind": "build_request",
-  "title": "Fix menu failing to load",
+  "title": "Remove tax from billing, order screen, and reports",
   "projectName": "Simple Sips Cafe",
-  "priority": "high",
+  "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-13",
-      "text": "Investigate and fix the menu data failing to load on the Menu Management screen. The issue was reported in Version 6. Ensure the backend query for fetching all menu items returns data correctly, and that the frontend MenuManagement page and OrderTaking page both successfully retrieve and display menu items grouped by category. Handle any actor initialization, deserialization, or migration errors that may be preventing menu data from loading.",
-      "target": "both",
+      "id": "REQ-14",
+      "text": "Remove tax entirely from the order totals display and calculation. In OrderTotalsPanel, remove the editable tax rate input and the tax line. In useOrderState hook, remove the taxRate state and taxAmount computation — the final total should be subtotal minus discount only.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "the menu is failed to load"
+          "remove tax as of now"
         ]
       },
       "acceptanceCriteria": [
-        "The Menu Management screen loads and displays all menu items grouped by their categories without any error state.",
-        "The Order Taking screen loads and displays all menu items grouped by category in the accordion sections.",
-        "No 'failed to load' or error message is shown on either page under normal operation.",
-        "The backend getMenuItems (or equivalent) query returns all seeded menu items successfully.",
-        "If the menu store was empty due to a migration issue, re-seeding or re-migration restores all 72 items across 10 categories."
+        "The OrderTotalsPanel no longer shows a tax rate input or a tax line",
+        "The final total displayed is subtotal minus any discount (no tax added)",
+        "Discount controls remain functional"
+      ]
+    },
+    {
+      "id": "REQ-15",
+      "text": "Remove tax from the BillLayout print receipt. The printed bill must no longer display a tax line or tax amount. The totals section should show: subtotal, discount (if any), and final total only.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "remove tax as of now"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Printed bill does not include a tax row",
+        "Bill totals show subtotal, optional discount, and final total",
+        "Print layout remains clean and well-formatted"
+      ]
+    },
+    {
+      "id": "REQ-16",
+      "text": "Update the backend order finalization logic to store orders without a tax field (or store tax as zero). The finalizeOrder function must compute the total as subtotal minus discount, without applying any tax percentage.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "remove tax as of now"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Finalized orders saved to the backend have tax stored as 0 or removed from the record",
+        "Total in stored sales records equals subtotal minus discount",
+        "Existing order history remains accessible without errors"
+      ]
+    },
+    {
+      "id": "REQ-17",
+      "text": "Remove the 'tax collected' stat card from the DailySummaryCard component on the Sales Reports screen. The daily summary should only show total revenue and items sold.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "remove tax as of now"
+        ]
+      },
+      "acceptanceCriteria": [
+        "DailySummaryCard no longer displays a 'Tax Collected' stat",
+        "Remaining stat cards (revenue, items sold) are displayed correctly"
       ]
     }
   ],
   "constraints": [
-    "Do not alter the existing menu data schema or seeded item names and prices.",
-    "Do not modify files listed in frontend.immutablePaths."
+    "Do not remove or break the discount functionality (flat or percentage)",
+    "Do not modify any files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
+    "Preserve all existing menu data, order history, and sales records in the backend"
   ],
   "nonGoals": [
-    "Adding new menu items or categories beyond what is already seeded.",
-    "Changing the visual theme or layout of the menu screens.",
-    "Modifying the order taking, billing, or reports functionality."
+    "Adding any new features beyond removing tax",
+    "Changing the visual theme or layout beyond removing tax-related UI elements",
+    "Modifying menu management functionality"
   ],
   "imageRequirements": {
     "required": [],

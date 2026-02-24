@@ -12,7 +12,6 @@ export type DiscountType = 'flat' | 'percentage';
 
 export function useOrderState() {
   const [items, setItems] = useState<ActiveOrderItem[]>([]);
-  const [taxRate, setTaxRate] = useState<number>(5);
   const [discountType, setDiscountType] = useState<DiscountType>('flat');
   const [discountValue, setDiscountValue] = useState<number>(0);
 
@@ -53,33 +52,26 @@ export function useOrderState() {
     setItems([]);
     setDiscountValue(0);
     setDiscountType('flat');
-    setTaxRate(5);
   }, []);
 
   const subtotal = useMemo(() => {
     return items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
   }, [items]);
 
-  const taxAmount = useMemo(() => {
-    return Math.round((subtotal * taxRate) / 100);
-  }, [subtotal, taxRate]);
-
   const discountAmount = useMemo(() => {
     if (discountType === 'flat') {
-      return Math.min(discountValue, subtotal + taxAmount);
+      return Math.min(discountValue, subtotal);
     } else {
-      return Math.round(((subtotal + taxAmount) * discountValue) / 100);
+      return Math.round((subtotal * discountValue) / 100);
     }
-  }, [discountType, discountValue, subtotal, taxAmount]);
+  }, [discountType, discountValue, subtotal]);
 
   const total = useMemo(() => {
-    return Math.max(0, subtotal + taxAmount - discountAmount);
-  }, [subtotal, taxAmount, discountAmount]);
+    return Math.max(0, subtotal - discountAmount);
+  }, [subtotal, discountAmount]);
 
   return {
     items,
-    taxRate,
-    setTaxRate,
     discountType,
     setDiscountType,
     discountValue,
@@ -89,7 +81,6 @@ export function useOrderState() {
     removeItem,
     clearOrder,
     subtotal,
-    taxAmount,
     discountAmount,
     total,
   };
