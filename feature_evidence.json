@@ -1,26 +1,4 @@
 {
   "kind": "feature_evidence_report",
-  "features": [
-    {
-      "featureId": "feature-ensure-the-order-tab-s-category-grid-and-category-item-views-correctly-display-all-11-categories-and-their-items-as-returned-from-the-backend-including-any-new-categories-e-g-combo-not-previously-present-the-category-sort-order-in-the-frontend-utility-should-include-tea-coffee-sandwich-toast-light-snacks-momos-burgers-starters-refreshers-combo",
-      "featureTitle": "Ensure the Order tab's category grid and category item views correctly display all 11 categories and their items as returned from the backend, including any new categories (e.g., Combo) not previously present. The category sort order in the frontend utility should include: Tea, Coffee, Sandwich, Toast, Light Snacks, Momos, Burgers, Starters, Refreshers, Combo.",
-      "files": [
-        "frontend/src/components/order/CategoryGrid.tsx",
-        "frontend/src/components/order/CategoryItemsView.tsx",
-        "frontend/src/lib/utils.ts"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
-      ],
-      "confidence": "high"
-    }
-  ]
+  "features": []
 }

@@ -1,51 +1,32 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-25T19:39:32.408Z",
+  "generatedAt": "2026-02-25T19:46:34.690Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
-    "implemented": 1,
+    "total": 1,
+    "implemented": 0,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Populate the backend menu with all items across the following 11 categories, each with the exact name and price (in INR) as listed: TEA: Normal Tea 20, Masala Tea 25, Ginger Tea 25, Elaichi Tea 25, Kesar Tea 40, Malai Tea 30, Green Tea 30, Black Tea 20, Lemon Tea 20, Darjeeling Tea 35, Lemon Iced Tea (300 ML) 60; COFFEE: Milk Coffee 40, Cappuccino 60, Americano 50, Iced Americano 70, Cold Coffee 70; SANDWICH: Veg Sandwich 60, Cheese Corn Sandwich 85, Paneer Sandwich 100, Double Jumbo Sandwich 120; TOAST: Butter Toast 40, Peri Peri Toast 50, Jam Toast 40, Malai Toast 50; LIGHT SNACKS: Wai Wai (Soup) 45, Wai Wai (Dry) 45, Maggi (Soup) 45, Maggi (Dry) 45, Butter Maggi 55, Vegetables Maggi 60, Cheese Maggi 65, Corn Maggi 70, Cheese Corn Maggi 75, Pasta (Red) 85, Pasta (White) 85; MOMOS: Veg Momo (Steam – 8 pcs) 50, Veg Momo (Fry – 6 pcs) 60, Cheese Momo (Steam – 8 pcs) 70, Cheese Momo (Fry – 6 pcs) 80, Corn Cheese Momo (Steam – 8 pcs) 80, Corn Cheese Momo (Fry – 6 pcs) 90, Paneer Momo (Steam – 8 pcs) 90, Paneer Momo (Fry – 6 pcs) 100, Kurkure Momo 80, Chilli Momo 80; BURGERS: Veg Burger 60, Cheese Burger 70, Paneer Burger 90; STARTERS: French Fries 70, Peri Peri Fries 85, American Corn 80, Chilli Potato 90, Baby Corn Chilli 100, Paneer Pakora (6 pcs) 90, Smileys (6 pcs) 75, Potato Cheese Shots (7 pcs) 70; REFRESHERS: Masala Coke 50, Fresh Lime Soda 50, Mojito 75; COMBO: Masala / Ginger Tea + Butter Toast 55, Normal Tea + Malai Toast 65, Veg Sandwich + Normal Tea 75, Maggi + Milk Coffee 80, French Fries + Cold Coffee 135, Corn Cheese Sandwich + Cold Coffee 150, Veg Momo + Lemon Iced Tea 105, Paneer Pakora (6 pcs) + Masala Tea 110, Pasta + Cold Coffee 150, Veg Burger + Smileys (6 pcs) + Tea 140, Chilli Potato + Green Tea 115, Paneer Sandwich + Peri Peri Fries 180, Cheese Burger + Peri Peri Fries + Cold Coffee 210. These items should be seeded or initialized in the backend actor so they appear in the menu at startup if no existing menu items are present.",
-        "status": "unknown",
-        "plannedFiles": [],
-        "matchedFiles": []
-      },
-      {
-        "id": "REQ-2",
-        "summary": "Ensure the Order tab's category grid and category item views correctly display all 11 categories and their items as returned from the backend, including any new categories (e.g., Combo) not previously present. The category sort order in the frontend utility should include: Tea, Coffee, Sandwich, Toast, Light Snacks, Momos, Burgers, Starters, Refreshers, Combo.",
-        "status": "implemented",
+        "summary": "Remove the text 'Non-Alcoholic Beverages' from the display names of the Tea and Coffee categories throughout the app. These categories should appear simply as 'Tea' and 'Coffee' wherever category names are rendered (Order tab category grid, menu sections, item forms, etc.).",
+        "status": "missing",
         "plannedFiles": [
-          "frontend/src/lib/utils.ts",
-          "frontend/src/components/order/CategoryGrid.tsx",
-          "frontend/src/components/order/CategoryItemsView.tsx"
+          "frontend/src/lib/utils.ts"
         ],
-        "matchedFiles": [
-          "frontend/src/lib/utils.ts",
-          "frontend/src/components/order/CategoryGrid.tsx",
-          "frontend/src/components/order/CategoryItemsView.tsx"
-        ]
+        "matchedFiles": []
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/menu/MenuItemForm.tsx",
-    "frontend/src/components/order/CategoryGrid.tsx",
-    "frontend/src/components/order/CategoryItemsView.tsx",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/lib/utils.ts",
+    "frontend/src/components/menu/MenuCategorySection.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

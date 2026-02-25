@@ -1,32 +1,23 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Add full categorized menu with all items and prices to the backend",
+  "title": "Remove 'Non-Alcoholic Beverages' label from Tea and Coffee categories",
   "requirements": [
     {
-      "id": "REQ-2",
-      "summary": "Ensure the Order tab's category grid and category item views correctly display all 11 categories and their items as returned from the backend, including the new Combo category, with proper sort order",
+      "id": "REQ-1",
+      "summary": "Remove the 'Non-Alcoholic Beverages' suffix from Tea and Coffee category display names throughout the frontend UI",
       "acceptanceCriteria": [
-        "All 11 categories appear as tappable tiles in the Order tab's category grid.",
-        "Tapping a category reveals all items belonging to it with correct names and prices.",
-        "The Combo category is displayed and sorted appropriately alongside other categories.",
-        "Item counts on category tiles reflect the correct number of items per category."
+        "The Tea category no longer shows 'Non-Alcoholic Beverages' anywhere in the UI.",
+        "The Coffee category no longer shows 'Non-Alcoholic Beverages' anywhere in the UI.",
+        "Both categories still appear and function correctly in the Order tab category grid.",
+        "Both categories still appear correctly in the Menu management page.",
+        "No other categories are affected by this change."
       ],
       "file_operations": [
         {
           "path": "frontend/src/lib/utils.ts",
           "operation": "modify",
-          "description": "Update the getCategorySortIndex function and CATEGORY_ORDER constant to include all 11 categories in the specified order: Tea, Coffee, Sandwich, Toast, Light Snacks, Momos, Burgers, Starters, Refreshers, Combo. Ensure the sort logic correctly handles the new Combo category."
-        },
-        {
-          "path": "frontend/src/components/order/CategoryGrid.tsx",
-          "operation": "modify",
-          "description": "Verify that the category grid correctly displays all 11 categories returned from the backend using the updated getCategorySortIndex utility. Ensure item counts reflect the correct number of items per category. Add the coffee emoji for Coffee category and combo emoji for Combo category if not already present."
-        },
-        {
-          "path": "frontend/src/components/order/CategoryItemsView.tsx",
-          "operation": "modify",
-          "description": "Verify that the category items view correctly displays all items for each of the 11 categories, including the new Combo category, with accurate names and prices as returned from the backend."
+          "description": "Update the getCategoryDisplayName function to return 'Tea' instead of 'Tea (Non-Alcoholic Beverages)' and 'Coffee' instead of 'Coffee (Non-Alcoholic Beverages)'. Ensure the mapping logic correctly strips or omits the '(Non-Alcoholic Beverages)' suffix for these two categories while preserving display names for all other categories."
         }
       ]
     }

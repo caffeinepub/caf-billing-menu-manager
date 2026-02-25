@@ -7,13 +7,13 @@ import Iter "mo:core/Iter";
 import List "mo:core/List";
 import Runtime "mo:core/Runtime";
 import Principal "mo:core/Principal";
-import Migration "migration";
+
 
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 
 // Specify the data migration function in with-clause
-(with migration = Migration.run)
+
 actor {
   type MenuItem = {
     id : Nat;

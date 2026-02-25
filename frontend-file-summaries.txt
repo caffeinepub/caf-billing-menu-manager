@@ -8,7 +8,7 @@
   "frontend/src/components/layout/Navigation.tsx": "Fixed bottom tab navigation with Menu, Order, and Reports tabs using icons, active state styling, and 64px tap targets.",
   "frontend/src/components/menu/MenuItemForm.tsx": "Menu item form updated to use `CATEGORY_DISPLAY_NAMES` from `useQueries` so preset category buttons show friendly labels (e.g. \"Momos\", \"Burgers\") while submitting the correct backend category names.",
   "frontend/src/components/menu/DeleteMenuItemDialog.tsx": "AlertDialog confirmation component for menu item deletion with loading state on the confirm button.",
-  "frontend/src/components/menu/MenuCategorySection.tsx": "Displays a category group with menu items; renders edit/delete actions for admins only, with item names using break-words to fully display long combo item names without truncation.",
+  "frontend/src/components/menu/MenuCategorySection.tsx": "Displays a category group with menu items; now uses `getCategoryDisplayName` from utils to show friendly labels (e.g. \"Tea\" instead of \"Tea (Non-Alcoholic Beverages)\") in both the section heading and each item's category subtitle, while still passing the raw backend category name for edit operations.",
   "frontend/src/components/order/MenuItemCard.tsx": "Tappable card for adding menu items to an order, showing name (with word-wrap for long combo names), price, and quantity badge if already in order.",
   "frontend/src/components/order/OrderItemRow.tsx": "Single order item row with increment/decrement quantity buttons, line total, and remove button.",
   "frontend/src/components/order/OrderSummaryPanel.tsx": "Scrollable list of order items using OrderItemRow, with empty state illustration.",

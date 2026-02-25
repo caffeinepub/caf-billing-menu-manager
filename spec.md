@@ -1,11 +1,10 @@
 # Specification
 
 ## Summary
-**Goal:** Populate the backend menu with all café items across 11 categories and ensure the frontend displays them correctly.
+**Goal:** Remove the "Non-Alcoholic Beverages" prefix from the Tea and Coffee category display names throughout the app.
 
 **Planned changes:**
-- Seed the backend with all menu items across 11 categories (Tea, Coffee, Sandwich, Toast, Light Snacks, Momos, Burgers, Starters, Refreshers, Combo) with exact names and prices in INR, only if no menu items are already present
-- Update the frontend category sort order to include all 11 categories: Tea, Coffee, Sandwich, Toast, Light Snacks, Momos, Burgers, Starters, Refreshers, Combo
-- Ensure the Order tab's category grid and item views display all 11 categories and their items as returned from the backend
+- Update the display name of the Tea category to show simply "Tea" (removing "Non-Alcoholic Beverages") wherever category names are rendered in the frontend (Order tab category grid, menu sections, item forms, etc.)
+- Update the display name of the Coffee category to show simply "Coffee" (removing "Non-Alcoholic Beverages") in the same locations
 
-**User-visible outcome:** All 11 menu categories with their full item lists and prices appear in the Order tab at startup, including the new Combo category, allowing staff to browse and select any item when creating orders.
+**User-visible outcome:** The Tea and Coffee categories appear with clean, short names throughout the app without the "Non-Alcoholic Beverages" label attached.
