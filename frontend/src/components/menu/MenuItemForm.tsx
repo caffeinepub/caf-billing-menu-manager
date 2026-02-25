@@ -2,12 +2,9 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import type { MenuItem } from '../../backend';
+import { CATEGORY_ORDER } from '../../hooks/useQueries';
 
-const PRESET_CATEGORIES = [
-  'Hot Coffee', 'Cold Coffee', 'Refreshers', 'Snacks',
-  'Desserts', 'Hot Drinks', 'Juices', 'Meals'
-];
+const PRESET_CATEGORIES = CATEGORY_ORDER;
 
 interface MenuItemFormProps {
   mode: 'create' | 'edit';
@@ -68,7 +65,7 @@ export default function MenuItemForm({ mode, initialValues, onSubmit, onCancel, 
           id="item-name"
           value={name}
           onChange={e => setName(e.target.value)}
-          placeholder="e.g. Cappuccino"
+          placeholder="e.g. Masala Tea"
           className="h-11"
         />
         {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
@@ -80,10 +77,10 @@ export default function MenuItemForm({ mode, initialValues, onSubmit, onCancel, 
           id="item-price"
           type="number"
           min="0"
-          step="0.01"
+          step="1"
           value={price}
           onChange={e => setPrice(e.target.value)}
-          placeholder="e.g. 120"
+          placeholder="e.g. 25"
           className="h-11"
         />
         {errors.price && <p className="text-xs text-destructive">{errors.price}</p>}

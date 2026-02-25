@@ -1,231 +1,24 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 19,
-  "summary": "A café billing and menu management web app. Features: digital menu management (add/edit/delete items with categories and prices), order taking with quantity adjustments, automatic bill calculation (subtotal, tax, discount, total), print-friendly bill layout, daily sales dashboard with item-wise and date-wise reports. Works offline with local data storage. Menu pre-populated with 10 categories: Tea (11 items), Coffee (5 items), Sandwich (4 items), Toast (4 items), Light Snacks (11 items), Momos (10 items), Burgers (3 items), Starters (8 items), Refreshers (3 items), and Combo (13 items) with exact names and prices as provided by the user.",
-  "architectural_notes": [
-    "Bluetooth thermal POS printer connectivity is not feasible in web apps; browser print function used as alternative",
-    "All data stored locally (localStorage or IndexedDB) for full offline support"
-  ],
+  "projectStateVersion": 3,
+  "summary": "New project",
+  "architectural_notes": [],
   "known_issues": [
-    "Menu fails to load (reported by user in Version 6)"
+    "Menu fails to load (reported in Version 12)"
   ],
-  "isFixRequest": false,
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-implement-a-menu-management-screen-where-caf-staff-can-add-edit-and-delete-menu-items-each-item-must-have-a-name-price-and-category-e-g-cold-coffee-refreshers-snacks-hot-drinks-etc-items-should-be-grouped-and-displayed-by-category",
-      "title": "Implement a Menu Management screen where café staff can add, edit, and delete menu items. Each item must have a name, price, and category (e.g., Cold Coffee, Refreshers, Snacks, Hot Drinks, etc.). Items should be grouped and displayed by category.",
+      "id": "feature-investigate-and-fix-the-root-cause-of-the-menu-failing-to-load-on-the-menu-management-page-ensure-the-backend-getmenuitems-call-succeeds-and-returns-the-seeded-menu-items-and-that-the-frontend-correctly-handles-the-response-without-errors",
+      "title": "Investigate and fix the root cause of the menu failing to load on the Menu Management page. Ensure the backend `getMenuItems` call succeeds and returns the seeded menu items, and that the frontend correctly handles the response without errors.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
-    },
-    {
-      "id": "feature-implement-an-order-taking-screen-that-displays-the-full-menu-grouped-by-category-staff-can-tap-click-items-to-add-them-to-the-current-order-and-adjust-each-item-s-quantity-increment-decrement-remove-the-order-summary-panel-must-show-each-selected-item-its-quantity-and-line-total",
-      "title": "Implement an Order Taking screen that displays the full menu grouped by category. Staff can tap/click items to add them to the current order and adjust each item's quantity (increment, decrement, remove). The order summary panel must show each selected item, its quantity, and line total.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-automatically-calculate-and-display-subtotal-tax-configurable-percentage-optional-discount-flat-amount-or-percentage-and-final-total-for-the-current-order-tax-rate-and-discount-must-be-editable-before-finalizing-the-bill",
-      "title": "Automatically calculate and display subtotal, tax (configurable percentage), optional discount (flat amount or percentage), and final total for the current order. Tax rate and discount must be editable before finalizing the bill.",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-generate-a-clean-print-friendly-bill-layout-when-an-order-is-finalized-the-bill-must-include-caf-name-date-and-time-order-items-with-quantities-and-prices-subtotal-tax-discount-if-any-and-final-total-provide-a-print-bill-button-that-triggers-the-browser-s-print-dialog-finalized-orders-must-be-saved-as-sales-records-in-the-backend",
-      "title": "Generate a clean, print-friendly bill layout when an order is finalized. The bill must include: café name, date and time, order items with quantities and prices, subtotal, tax, discount (if any), and final total. Provide a 'Print Bill' button that triggers the browser's print dialog. Finalized orders must be saved as sales records in the backend.",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-implement-a-sales-reports-screen-with-three-views-1-total-daily-sales-summary-for-today-2-item-wise-sales-showing-quantity-sold-and-revenue-per-item-and-3-date-wise-sales-history-listing-total-revenue-per-day-allow-filtering-the-date-wise-view-by-a-date-range",
-      "title": "Implement a Sales Reports screen with three views: (1) Total daily sales summary for today, (2) Item-wise sales showing quantity sold and revenue per item, and (3) Date-wise sales history listing total revenue per day. Allow filtering the date-wise view by a date range.",
-      "reqIds": [
-        "REQ-5"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-apply-a-warm-caf-inspired-visual-theme-throughout-the-app-use-earthy-tones-e-g-espresso-browns-cream-warm-amber-clean-sans-serif-typography-and-a-mobile-first-layout-with-large-tap-targets-navigation-should-be-bottom-tab-style-suitable-for-one-handed-phone-use-the-interface-must-feel-fast-and-uncluttered-for-staff-use-during-rush-hours",
-      "title": "Apply a warm, café-inspired visual theme throughout the app. Use earthy tones (e.g., espresso browns, cream, warm amber), clean sans-serif typography, and a mobile-first layout with large tap targets. Navigation should be bottom-tab style suitable for one-handed phone use. The interface must feel fast and uncluttered for staff use during rush hours.",
-      "reqIds": [
-        "REQ-6"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-on-the-order-taking-screen-replace-the-static-category-headings-with-collapsible-accordion-dropdown-sections-each-category-heading-should-act-as-a-toggle-tapping-clicking-it-expands-or-collapses-the-list-of-items-beneath-it-all-categories-should-be-expanded-by-default-the-category-heading-must-clearly-indicate-its-expanded-collapsed-state-e-g-with-a-chevron-icon-this-allows-staff-to-quickly-collapse-categories-they-don-t-need-and-find-items-faster",
-      "title": "On the Order Taking screen, replace the static category headings with collapsible accordion/dropdown sections. Each category heading should act as a toggle — tapping/clicking it expands or collapses the list of items beneath it. All categories should be expanded by default. The category heading must clearly indicate its expanded/collapsed state (e.g., with a chevron icon). This allows staff to quickly collapse categories they don't need and find items faster.",
-      "reqIds": [
-        "REQ-8"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-save-the-uploaded-caf-logo-final-01-png-as-a-static-asset-at-frontend-public-assets-generated-cafe-logo-png-and-render-it-in-the-app-header-applayout-tsx-alongside-the-caf-name-simple-sips-cafe-the-logo-should-appear-on-the-left-side-of-the-sticky-header-sized-appropriately-for-mobile-height-40-48px-with-the-caf-name-simple-sips-cafe-displayed-next-to-it-in-a-style-matching-the-warm-amber-orange-script-branding-shown-in-the-uploaded-image",
-      "title": "Save the uploaded café logo (final_01.png) as a static asset at frontend/public/assets/generated/cafe-logo.png and render it in the app header (AppLayout.tsx) alongside the café name 'Simple Sips Cafe'. The logo should appear on the left side of the sticky header, sized appropriately for mobile (height ~40–48px), with the café name 'Simple Sips Cafe' displayed next to it in a style matching the warm amber/orange script branding shown in the uploaded image.",
-      "reqIds": [
-        "REQ-9"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-print-friendly-billlayout-component-to-display-the-simple-sips-cafe-logo-image-and-the-caf-name-simple-sips-cafe-at-the-top-of-the-printed-bill-receipt-replacing-any-generic-placeholder-text-currently-used-for-the-caf-name",
-      "title": "Update the print-friendly BillLayout component to display the Simple Sips Cafe logo image and the café name 'Simple Sips Cafe' at the top of the printed bill receipt, replacing any generic placeholder text currently used for the café name.",
-      "reqIds": [
-        "REQ-10"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-save-the-newly-uploaded-caf-logo-image-png-as-a-static-asset-at-frontend-public-assets-generated-cafe-logo-png-replacing-the-existing-file-update-applayout-tsx-to-render-this-new-logo-image-in-the-sticky-header-at-the-same-position-and-size-height-40-48px-alongside-the-simple-sips-cafe-caf-name",
-      "title": "Save the newly uploaded café logo (image.png) as a static asset at frontend/public/assets/generated/cafe-logo.png, replacing the existing file. Update AppLayout.tsx to render this new logo image in the sticky header at the same position and size (height ~40–48px) alongside the 'Simple Sips Cafe' café name.",
-      "reqIds": [
-        "REQ-11"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-the-print-friendly-billlayout-component-to-use-the-new-caf-logo-image-frontend-public-assets-generated-cafe-logo-png-at-the-top-of-the-printed-bill-receipt-replacing-the-previously-used-logo",
-      "title": "Update the print-friendly BillLayout component to use the new café logo image (frontend/public/assets/generated/cafe-logo.png) at the top of the printed bill receipt, replacing the previously used logo.",
-      "reqIds": [
-        "REQ-12"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-investigate-and-fix-the-menu-data-failing-to-load-on-the-menu-management-screen-the-issue-was-reported-in-version-6-ensure-the-backend-query-for-fetching-all-menu-items-returns-data-correctly-and-that-the-frontend-menumanagement-page-and-ordertaking-page-both-successfully-retrieve-and-display-menu-items-grouped-by-category-handle-any-actor-initialization-deserialization-or-migration-errors-that-may-be-preventing-menu-data-from-loading",
-      "title": "Investigate and fix the menu data failing to load on the Menu Management screen. The issue was reported in Version 6. Ensure the backend query for fetching all menu items returns data correctly, and that the frontend MenuManagement page and OrderTaking page both successfully retrieve and display menu items grouped by category. Handle any actor initialization, deserialization, or migration errors that may be preventing menu data from loading.",
-      "reqIds": [
-        "REQ-13"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-remove-tax-entirely-from-the-order-totals-display-and-calculation-in-ordertotalspanel-remove-the-editable-tax-rate-input-and-the-tax-line-in-useorderstate-hook-remove-the-taxrate-state-and-taxamount-computation-the-final-total-should-be-subtotal-minus-discount-only",
-      "title": "Remove tax entirely from the order totals display and calculation. In OrderTotalsPanel, remove the editable tax rate input and the tax line. In useOrderState hook, remove the taxRate state and taxAmount computation — the final total should be subtotal minus discount only.",
-      "reqIds": [
-        "REQ-14"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-remove-tax-from-the-billlayout-print-receipt-the-printed-bill-must-no-longer-display-a-tax-line-or-tax-amount-the-totals-section-should-show-subtotal-discount-if-any-and-final-total-only",
-      "title": "Remove tax from the BillLayout print receipt. The printed bill must no longer display a tax line or tax amount. The totals section should show: subtotal, discount (if any), and final total only.",
-      "reqIds": [
-        "REQ-15"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-remove-the-tax-collected-stat-card-from-the-dailysummarycard-component-on-the-sales-reports-screen-the-daily-summary-should-only-show-total-revenue-and-items-sold",
-      "title": "Remove the 'tax collected' stat card from the DailySummaryCard component on the Sales Reports screen. The daily summary should only show total revenue and items sold.",
-      "reqIds": [
-        "REQ-17"
-      ],
-      "version": 1
     }
   ],
-  "new_feature_requests": [
-    {
-      "id": "AR-1",
-      "summary": "Add, edit, and delete menu items with categories and prices",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Order taking: select menu items, adjust quantities",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Auto-calculate subtotal, tax, discount, and final total",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-4",
-      "summary": "Generate clean print-friendly bill layout (browser print as Bluetooth printer alternative)",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-5",
-      "summary": "Daily sales dashboard with total, item-wise, and date-wise reports",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-6",
-      "summary": "Offline functionality with local data storage",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-9",
-      "summary": "Pre-populate full menu with 10 categories and exact items/prices: Tea (11), Coffee (5), Sandwich (4), Toast (4), Light Snacks (11), Momos (10), Burgers (3), Starters (8), Refreshers (3), Combo (13)",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-10",
-      "summary": "Update the backend migration to seed the menu with all 72 items across 10 categories using the exact names and prices provided: TEA (Normal Tea ₹20, Masala Tea ₹25, Ginger Tea ₹25, Elaichi Tea ₹25, Kesar Tea ₹40, Malai Tea ₹30, Green Tea ₹30, Black Tea ₹20, Lemon Tea ₹20, Darjeeling Tea ₹35, Lemon Iced Tea (300 ML) ₹60), COFFEE (Milk Coffee ₹40, Cappuccino ₹60, Americano ₹50, Iced Americano ₹70, Cold Coffee ₹70), SANDWICH (Veg Sandwich ₹60, Cheese Corn Sandwich ₹85, Paneer Sandwich ₹100, Double Jumbo Sandwich ₹120), TOAST (Butter Toast ₹40, Peri Peri Toast ₹50, Jam Toast ₹40, Malai Toast ₹50), LIGHT SNACKS (Wai Wai (Soup) ₹45, Wai Wai (Dry) ₹45, Maggi (Soup) ₹45, Maggi (Dry) ₹45, Butter Maggi ₹55, Vegetables Maggi ₹60, Cheese Maggi ₹65, Corn Maggi ₹70, Cheese Corn Maggi ₹75, Pasta (Red) ₹85, Pasta (White) ₹85), MOMOS (Veg Momo (Steam – 8 pcs) ₹50, Veg Momo (Fry – 6 pcs) ₹60, Cheese Momo (Steam – 8 pcs) ₹70, Cheese Momo (Fry – 6 pcs) ₹80, Corn Cheese Momo (Steam – 8 pcs) ₹80, Corn Cheese Momo (Fry – 6 pcs) ₹90, Paneer Momo (Steam – 8 pcs) ₹90, Paneer Momo (Fry – 6 pcs) ₹100, Kurkure Momo ₹80, Chilli Momo ₹80), BURGERS (Veg Burger ₹60, Cheese Burger ₹70, Paneer Burger ₹90), STARTERS (French Fries ₹70, Peri Peri Fries ₹85, American Corn ₹80, Chilli Potato ₹90, Baby Corn Chilli ₹100, Paneer Pakora (6 pcs) ₹90, Smileys (6 pcs) ₹75, Potato Cheese Shots (7 pcs) ₹70), REFRESHERS (Masala Coke ₹50, Fresh Lime Soda ₹50, Mojito ₹75), COMBO (Masala / Ginger Tea + Butter Toast ₹55, Normal Tea + Malai Toast ₹65, Veg Sandwich + Normal Tea ₹75, Maggi + Milk Coffee ₹80, French Fries + Cold Coffee ₹135, Corn Cheese Sandwich + Cold Coffee ₹150, Veg Momo + Lemon Iced Tea ₹105, Paneer Pakora (6 pcs) + Masala Tea ₹110, Pasta + Cold Coffee ₹150, Veg Burger + Smileys (6 pcs) + Tea ₹140, Chilli Potato + Green Tea ₹115, Paneer Sandwich + Peri Peri Fries ₹180, Cheese Burger + Peri Peri Fries + Cold Coffee ₹210). The migration must replace any previously seeded items and preserve existing orders.",
-      "reqIds": [
-        "REQ-7"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-11",
-      "summary": "Add a dedicated dropdown/accordion for each category heading on the menu so users can expand/collapse categories to easily find items",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-12",
-      "summary": "Add a logo and café name/branding to the app header",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-13",
-      "summary": "Remove tax from the billing/order screen",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-16",
-      "summary": "Update the backend order finalization logic to store orders without a tax field (or store tax as zero). The finalizeOrder function must compute the total as subtotal minus discount, without applying any tax percentage.",
-      "reqIds": [
-        "REQ-16"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-17",
-      "summary": "Clear/reset all existing data records (orders, sales) so the app starts fresh with no prior records",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-18",
-      "summary": "Clear all existing finalized order and sales records from the backend so the app starts with zero historical data. The menu items must remain intact. After the reset, all sales report views (daily summary, item-wise, date-wise) should show empty/zero states.",
-      "reqIds": [
-        "REQ-18"
-      ],
-      "status": "pending"
-    }
-  ],
-  "gameProjectType": "none",
-  "projectName": "Café Billing & Menu Manager",
+  "new_feature_requests": [],
+  "projectName": "Fix menu failing to load",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

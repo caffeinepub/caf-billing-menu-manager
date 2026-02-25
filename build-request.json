@@ -1,39 +1,37 @@
 {
   "kind": "build_request",
-  "title": "Reset all sales and order records for a fresh start",
-  "projectName": "Simple Sips Cafe",
-  "priority": "normal",
+  "title": "Fix menu failing to load",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-18",
-      "text": "Clear all existing finalized order and sales records from the backend so the app starts with zero historical data. The menu items must remain intact. After the reset, all sales report views (daily summary, item-wise, date-wise) should show empty/zero states.",
-      "target": "backend",
+      "id": "REQ-1",
+      "text": "Investigate and fix the root cause of the menu failing to load on the Menu Management page. Ensure the backend `getMenuItems` call succeeds and returns the seeded menu items, and that the frontend correctly handles the response without errors.",
+      "target": "both",
       "source": {
         "messageIds": [
           "msg-4"
         ],
         "quotes": [
-          "give me fresh without any record so that i can display it"
+          "failed to load menu"
         ]
       },
       "acceptanceCriteria": [
-        "All previously saved orders are removed from backend storage.",
-        "The daily summary card shows ₹0 revenue and 0 items sold.",
-        "The item-wise sales table is empty.",
-        "The date-wise sales table is empty.",
-        "All menu items (10 categories, ~72 items) remain fully intact and visible on the Menu Management and Order Taking screens.",
-        "New orders can be placed and saved successfully after the reset."
+        "Navigating to the /menu route displays menu items grouped by category without any error state or loading failure",
+        "The backend actor returns a non-empty list of menu items when queried",
+        "If the menu is empty on first load, the auto-seed logic in MenuManagement.tsx successfully seeds the default menu and displays it",
+        "No console errors or unhandled promise rejections occur when the menu page loads",
+        "The Order page accordion also loads menu items correctly"
       ]
     }
   ],
   "constraints": [
-    "Do not delete or modify any menu items — only order/sales records should be cleared.",
-    "Do not reset or alter the backend menu seeding logic."
+    "Do not alter immutable frontend paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui",
+    "All Motoko logic must remain in backend/main.mo as a single actor"
   ],
   "nonGoals": [
-    "Resetting menu items or categories.",
-    "Changing any UI layout or visual theme.",
-    "Modifying order-taking or billing calculation logic."
+    "Adding new menu categories or items beyond fixing the load failure",
+    "Changing the visual design or layout of the menu page",
+    "Modifying order, billing, or reports functionality"
   ],
   "imageRequirements": {
     "required": [],

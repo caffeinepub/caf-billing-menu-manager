@@ -1,10 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Clear all existing order and sales records from the backend so the Simple Sips Cafe app starts fresh with zero historical data, while keeping all menu items intact.
+**Goal:** Fix the menu failing to load on the Menu Management page.
 
 **Planned changes:**
-- Remove all finalized order and sales records from backend storage
-- Ensure daily summary, item-wise sales, and date-wise sales views display empty/zero states after the reset
+- Investigate and fix the root cause of the `getMenuItems` backend call failing to return seeded menu items
+- Ensure the frontend correctly handles the response from `getMenuItems` without errors
+- Verify the auto-seed logic in `MenuManagement.tsx` runs successfully when the menu is empty on first load
+- Ensure the Order page accordion also loads menu items correctly
 
-**User-visible outcome:** All sales report views show ₹0 revenue and empty tables, while all menu items remain intact and new orders can be placed normally.
+**User-visible outcome:** The Menu Management page displays menu items grouped by category without any error state, and the Order page accordion also loads menu items correctly.

@@ -1,22 +1,30 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
-import { ChevronDown, ChevronUp, CheckCircle, ShoppingCart, AlertCircle, RefreshCw } from 'lucide-react';
-import { useMenuItemsByCategory, useFinalizeOrder } from '../hooks/useQueries';
+import { ChevronDown, ChevronUp, CheckCircle, ShoppingCart, AlertCircle, RefreshCw, Loader2 } from 'lucide-react';
+import {
+  useMenuItemsByCategory,
+  useFinalizeOrder,
+  useSeedDefaultMenu,
+  sortCategoriesByOrder,
+} from '../hooks/useQueries';
 import { useOrderState } from '../hooks/useOrderState';
 import MenuCategoryAccordion from '../components/order/MenuCategoryAccordion';
 import OrderSummaryPanel from '../components/order/OrderSummaryPanel';
 import OrderTotalsPanel from '../components/order/OrderTotalsPanel';
-import type { MenuItem, OrderItem } from '../backend';
+import type { OrderItem } from '../backend';
 
 export default function OrderTaking() {
   const navigate = useNavigate();
   const [summaryExpanded, setSummaryExpanded] = useState(true);
+  const seedAttemptedRef = useRef(false);
+
   const { data: categories, isLoading, error, refetch, isFetching } = useMenuItemsByCategory();
   const finalizeMutation = useFinalizeOrder();
+  const seedMutation = useSeedDefaultMenu();
 
   const {
     items,
@@ -35,6 +43,23 @@ export default function OrderTaking() {
     total: number;
     timestamp: bigint;
   } | null>(null);
+
+  // Auto-seed default menu when the menu is empty after a successful load.
+  // Use a ref to prevent repeated seed attempts across re-renders.
+  useEffect(() => {
+    if (
+      !isLoading &&
+      !isFetching &&
+      !error &&
+      !seedAttemptedRef.current &&
+      !seedMutation.isPending &&
+      Array.isArray(categories) &&
+      categories.length === 0
+    ) {
+      seedAttemptedRef.current = true;
+      seedMutation.mutate();
+    }
+  }, [isLoading, isFetching, error, categories, seedMutation]);
 
   const getQuantityInOrder = (menuItemId: bigint) => {
     return items.find(i => i.menuItemId === menuItemId)?.quantity ?? 0;
@@ -76,7 +101,11 @@ export default function OrderTaking() {
     }
   };
 
+  // Sort categories in canonical order before rendering
+  const sortedCategories = Array.isArray(categories) ? sortCategoriesByOrder(categories) : [];
   const totalItemCount = items.reduce((sum, i) => sum + i.quantity, 0);
+  const isSeeding = seedMutation.isPending;
+  const showLoading = isLoading || isSeeding;
 
   return (
     <div className="flex flex-col h-full">
@@ -92,21 +121,28 @@ export default function OrderTaking() {
         </div>
 
         {/* Loading State */}
-        {isLoading && (
+        {showLoading && (
           <div className="space-y-3">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="rounded-xl border border-border overflow-hidden">
-                <Skeleton className="h-[52px] w-full" />
-                <div className="p-3 space-y-2">
-                  {[1, 2, 3].map(j => <Skeleton key={j} className="h-14 rounded-lg" />)}
-                </div>
+            {isSeeding && !isLoading ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
+                <Loader2 size={28} className="animate-spin text-primary" />
+                <p className="text-sm text-muted-foreground">Setting up menu…</p>
               </div>
-            ))}
+            ) : (
+              [1, 2, 3].map(i => (
+                <div key={i} className="rounded-xl border border-border overflow-hidden">
+                  <Skeleton className="h-[52px] w-full" />
+                  <div className="p-3 space-y-2">
+                    {[1, 2, 3].map(j => <Skeleton key={j} className="h-14 rounded-lg" />)}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         )}
 
         {/* Error State */}
-        {error && !isLoading && (
+        {error && !showLoading && (
           <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
             <div className="w-14 h-14 rounded-2xl bg-destructive/10 flex items-center justify-center">
               <AlertCircle size={26} className="text-destructive" />
@@ -121,7 +157,10 @@ export default function OrderTaking() {
               variant="outline"
               size="sm"
               className="gap-2"
-              onClick={() => refetch()}
+              onClick={() => {
+                seedAttemptedRef.current = false;
+                refetch();
+              }}
               disabled={isFetching}
             >
               <RefreshCw size={14} className={isFetching ? 'animate-spin' : ''} />
@@ -131,60 +170,64 @@ export default function OrderTaking() {
         )}
 
         {/* Empty State */}
-        {!isLoading && !error && (!categories || categories.length === 0) && (
-          <div className="text-center py-12">
-            <p className="text-sm text-muted-foreground">No menu items found.</p>
-            <p className="text-xs text-muted-foreground mt-1">Add items in the Menu tab first.</p>
+        {!showLoading && !error && sortedCategories.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
+              <ShoppingCart size={28} className="text-muted-foreground" />
+            </div>
+            <h3 className="font-display font-semibold text-base text-foreground">No menu items</h3>
+            <p className="text-sm text-muted-foreground mt-1 max-w-[200px]">
+              Add items to the menu first to start taking orders
+            </p>
           </div>
         )}
 
-        {/* Menu Categories */}
-        {!isLoading && !error && categories && categories.map(([category, menuItems]) => (
-          <MenuCategoryAccordion
-            key={category}
-            category={category}
-            menuItems={menuItems as MenuItem[]}
-            getQuantityInOrder={getQuantityInOrder}
-            onAdd={addItem}
-          />
-        ))}
+        {/* Menu Categories — rendered in canonical order */}
+        {!showLoading && !error && sortedCategories.length > 0 && (
+          <div className="space-y-2">
+            {sortedCategories.map(([category, menuItems]) => (
+              <MenuCategoryAccordion
+                key={category}
+                category={category}
+                menuItems={Array.isArray(menuItems) ? menuItems : []}
+                getQuantityInOrder={getQuantityInOrder}
+                onAdd={addItem}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Order Summary Panel (sticky bottom) */}
-      <div className="no-print border-t border-border bg-card shadow-[0_-4px_16px_rgba(0,0,0,0.08)]">
-        {/* Toggle Header */}
-        <button
-          onClick={() => setSummaryExpanded(prev => !prev)}
-          className="w-full flex items-center justify-between px-4 py-3 min-h-[52px]"
-        >
-          <div className="flex items-center gap-2">
-            <ShoppingCart size={16} className="text-primary" />
-            <span className="font-semibold text-sm text-foreground">
+      {/* Order Summary Section */}
+      {items.length > 0 && (
+        <div className="border-t border-border bg-card">
+          {/* Collapse Toggle */}
+          <button
+            className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-foreground"
+            onClick={() => setSummaryExpanded(prev => !prev)}
+          >
+            <span className="flex items-center gap-2">
+              <ShoppingCart size={16} className="text-primary" />
               Order Summary
-            </span>
-            {totalItemCount > 0 && (
               <Badge variant="secondary" className="rounded-full text-xs px-2 py-0">
                 {totalItemCount}
               </Badge>
-            )}
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="font-bold text-primary text-sm">₹{total.toFixed(2)}</span>
+            </span>
             {summaryExpanded ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-          </div>
-        </button>
+          </button>
 
-        {summaryExpanded && (
-          <div className="px-4 pb-4 space-y-3 animate-slide-up">
-            <OrderSummaryPanel
-              items={items}
-              onQuantityChange={updateQuantity}
-              onRemove={removeItem}
-            />
-
-            {items.length > 0 && (
-              <>
-                <Separator />
+          {summaryExpanded && (
+            <>
+              <Separator />
+              <div className="px-4 pt-3 pb-2 max-h-52 overflow-y-auto">
+                <OrderSummaryPanel
+                  items={items}
+                  onQuantityChange={updateQuantity}
+                  onRemove={removeItem}
+                />
+              </div>
+              <Separator />
+              <div className="px-4 py-3">
                 <OrderTotalsPanel
                   subtotal={subtotal}
                   discountType={discountType}
@@ -194,19 +237,31 @@ export default function OrderTaking() {
                   onDiscountTypeChange={setDiscountType}
                   onDiscountValueChange={setDiscountValue}
                 />
-                <Button
-                  className="w-full h-12 text-base font-semibold gap-2 mt-2"
-                  onClick={handleFinalize}
-                  disabled={finalizeMutation.isPending || items.length === 0}
-                >
+              </div>
+            </>
+          )}
+
+          <div className="px-4 pb-4 pt-1">
+            <Button
+              className="w-full h-12 text-base font-semibold gap-2"
+              onClick={handleFinalize}
+              disabled={items.length === 0 || finalizeMutation.isPending}
+            >
+              {finalizeMutation.isPending ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  Processing…
+                </>
+              ) : (
+                <>
                   <CheckCircle size={18} />
-                  {finalizeMutation.isPending ? 'Processing...' : 'Finalize Order'}
-                </Button>
-              </>
-            )}
+                  Finalize Order · ₹{total}
+                </>
+              )}
+            </Button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,6 +1,45 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Reset all sales and order records for a fresh start",
-  "requirements": []
+  "title": "Fix menu failing to load",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "summary": "Investigate and fix the root cause of the menu failing to load on the Menu Management page, ensuring backend calls succeed and frontend handles responses correctly",
+      "acceptanceCriteria": [
+        "Navigating to the /menu route displays menu items grouped by category without any error state or loading failure",
+        "The backend actor returns a non-empty list of menu items when queried",
+        "If the menu is empty on first load, the auto-seed logic in MenuManagement.tsx successfully seeds the default menu and displays it",
+        "No console errors or unhandled promise rejections occur when the menu page loads",
+        "The Order page accordion also loads menu items correctly"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Review and fix the useMenuItemsQuery hook to ensure it properly handles the backend getAllMenuItems response. Add error handling for failed queries and ensure the query key is stable. Verify that mutations correctly invalidate the menu items cache to trigger refetch after seeding or modifications."
+        },
+        {
+          "path": "frontend/src/pages/MenuManagement.tsx",
+          "operation": "modify",
+          "description": "Fix the auto-seed logic to properly handle async operations and error states. Ensure the seeding mutation completes before refetching menu items. Add proper error boundaries and loading states. Verify that the component correctly displays menu items after seeding completes and handles empty states gracefully."
+        },
+        {
+          "path": "frontend/src/components/menu/MenuCategorySection.tsx",
+          "operation": "modify",
+          "description": "Add error handling and loading states for menu item operations (edit, delete). Ensure the component gracefully handles empty menu item arrays and displays appropriate feedback when operations fail."
+        },
+        {
+          "path": "frontend/src/pages/OrderTaking.tsx",
+          "operation": "modify",
+          "description": "Review the menu items query usage and ensure it properly handles loading and error states. Verify that the accordion receives valid grouped menu data and displays a helpful message if menu items fail to load."
+        },
+        {
+          "path": "frontend/src/components/order/MenuCategoryAccordion.tsx",
+          "operation": "modify",
+          "description": "Add error handling for cases where grouped menu items fail to load or are malformed. Ensure the component displays an appropriate fallback UI when menu data is unavailable and doesn't break the order page."
+        }
+      ]
+    }
+  ]
 }
