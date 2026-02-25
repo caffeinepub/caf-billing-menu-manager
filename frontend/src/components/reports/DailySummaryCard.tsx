@@ -1,5 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { TrendingUp, ShoppingBag } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrencyBigInt } from '@/lib/utils';
 
 interface DailySummaryCardProps {
@@ -13,10 +14,11 @@ export default function DailySummaryCard({ total, itemCount, isLoading }: DailyS
     return (
       <div className="grid grid-cols-2 gap-3">
         {[1, 2].map(i => (
-          <Card key={i} className="animate-pulse">
+          <Card key={i}>
             <CardContent className="p-4">
-              <div className="h-8 bg-muted rounded mb-2" />
-              <div className="h-3 bg-muted rounded w-2/3" />
+              <Skeleton className="h-8 w-8 rounded-lg mb-2" />
+              <Skeleton className="h-5 w-3/4 mb-1" />
+              <Skeleton className="h-3 w-2/3" />
             </CardContent>
           </Card>
         ))}

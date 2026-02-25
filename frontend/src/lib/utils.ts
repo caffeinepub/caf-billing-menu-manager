@@ -46,3 +46,48 @@ export function endOfDay(date: Date): Date {
   d.setHours(23, 59, 59, 999);
   return d;
 }
+
+// Fixed category display order for the café menu
+// These match the actual backend category names used in migration.mo
+export const MENU_CATEGORY_ORDER = [
+  'Tea (Non-Alcoholic Beverages)',
+  'Coffee (Non-Alcoholic Beverages)',
+  'Sandwich',
+  'Toast',
+  'Light Snacks',
+  'Momo',
+  'Burger',
+  'Starter',
+  'Refresher',
+  'Combo',
+];
+
+/**
+ * Sort an array of category name strings in the canonical café menu order.
+ * Categories not in the fixed list appear at the end in their original order.
+ */
+export function sortMenuCategories(categories: string[]): string[] {
+  return [...categories].sort((a, b) => {
+    const ai = MENU_CATEGORY_ORDER.indexOf(a);
+    const bi = MENU_CATEGORY_ORDER.indexOf(b);
+    const aIdx = ai === -1 ? MENU_CATEGORY_ORDER.length : ai;
+    const bIdx = bi === -1 ? MENU_CATEGORY_ORDER.length : bi;
+    if (aIdx !== bIdx) return aIdx - bIdx;
+    return a.localeCompare(b);
+  });
+}
+
+/**
+ * Get a human-friendly display name for a backend category name.
+ */
+export function getCategoryDisplayName(category: string): string {
+  const displayNames: Record<string, string> = {
+    'Tea (Non-Alcoholic Beverages)': 'Tea',
+    'Coffee (Non-Alcoholic Beverages)': 'Coffee',
+    'Momo': 'Momos',
+    'Burger': 'Burgers',
+    'Starter': 'Starters',
+    'Refresher': 'Refreshers',
+  };
+  return displayNames[category] ?? category;
+}

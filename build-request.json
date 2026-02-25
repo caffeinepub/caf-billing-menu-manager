@@ -1,37 +1,57 @@
 {
   "kind": "build_request",
-  "title": "Fix menu failing to load",
-  "priority": "high",
+  "title": "Add full categorized menu with all items and prices to the backend",
+  "projectName": "Café Billing Manager",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Investigate and fix the root cause of the menu failing to load on the Menu Management page. Ensure the backend `getMenuItems` call succeeds and returns the seeded menu items, and that the frontend correctly handles the response without errors.",
-      "target": "both",
+      "text": "Populate the backend menu with all items across the following 11 categories, each with the exact name and price (in INR) as listed: TEA: Normal Tea 20, Masala Tea 25, Ginger Tea 25, Elaichi Tea 25, Kesar Tea 40, Malai Tea 30, Green Tea 30, Black Tea 20, Lemon Tea 20, Darjeeling Tea 35, Lemon Iced Tea (300 ML) 60; COFFEE: Milk Coffee 40, Cappuccino 60, Americano 50, Iced Americano 70, Cold Coffee 70; SANDWICH: Veg Sandwich 60, Cheese Corn Sandwich 85, Paneer Sandwich 100, Double Jumbo Sandwich 120; TOAST: Butter Toast 40, Peri Peri Toast 50, Jam Toast 40, Malai Toast 50; LIGHT SNACKS: Wai Wai (Soup) 45, Wai Wai (Dry) 45, Maggi (Soup) 45, Maggi (Dry) 45, Butter Maggi 55, Vegetables Maggi 60, Cheese Maggi 65, Corn Maggi 70, Cheese Corn Maggi 75, Pasta (Red) 85, Pasta (White) 85; MOMOS: Veg Momo (Steam – 8 pcs) 50, Veg Momo (Fry – 6 pcs) 60, Cheese Momo (Steam – 8 pcs) 70, Cheese Momo (Fry – 6 pcs) 80, Corn Cheese Momo (Steam – 8 pcs) 80, Corn Cheese Momo (Fry – 6 pcs) 90, Paneer Momo (Steam – 8 pcs) 90, Paneer Momo (Fry – 6 pcs) 100, Kurkure Momo 80, Chilli Momo 80; BURGERS: Veg Burger 60, Cheese Burger 70, Paneer Burger 90; STARTERS: French Fries 70, Peri Peri Fries 85, American Corn 80, Chilli Potato 90, Baby Corn Chilli 100, Paneer Pakora (6 pcs) 90, Smileys (6 pcs) 75, Potato Cheese Shots (7 pcs) 70; REFRESHERS: Masala Coke 50, Fresh Lime Soda 50, Mojito 75; COMBO: Masala / Ginger Tea + Butter Toast 55, Normal Tea + Malai Toast 65, Veg Sandwich + Normal Tea 75, Maggi + Milk Coffee 80, French Fries + Cold Coffee 135, Corn Cheese Sandwich + Cold Coffee 150, Veg Momo + Lemon Iced Tea 105, Paneer Pakora (6 pcs) + Masala Tea 110, Pasta + Cold Coffee 150, Veg Burger + Smileys (6 pcs) + Tea 140, Chilli Potato + Green Tea 115, Paneer Sandwich + Peri Peri Fries 180, Cheese Burger + Peri Peri Fries + Cold Coffee 210. These items should be seeded or initialized in the backend actor so they appear in the menu at startup if no existing menu items are present.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-latest"
         ],
         "quotes": [
-          "failed to load menu"
+          "add this in menu"
         ]
       },
       "acceptanceCriteria": [
-        "Navigating to the /menu route displays menu items grouped by category without any error state or loading failure",
-        "The backend actor returns a non-empty list of menu items when queried",
-        "If the menu is empty on first load, the auto-seed logic in MenuManagement.tsx successfully seeds the default menu and displays it",
-        "No console errors or unhandled promise rejections occur when the menu page loads",
-        "The Order page accordion also loads menu items correctly"
+        "All 11 categories (Tea, Coffee, Sandwich, Toast, Light Snacks, Momos, Burgers, Starters, Refreshers, Combo) are present in the backend menu.",
+        "Every item listed is stored with the exact name and price as specified.",
+        "Items are retrievable via the existing menu query used by the frontend.",
+        "No duplicate items are created if the menu is already populated."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Ensure the Order tab's category grid and category item views correctly display all 11 categories and their items as returned from the backend, including any new categories (e.g., Combo) not previously present. The category sort order in the frontend utility should include: Tea, Coffee, Sandwich, Toast, Light Snacks, Momos, Burgers, Starters, Refreshers, Combo.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "add this in menu"
+        ]
+      },
+      "acceptanceCriteria": [
+        "All 11 categories appear as tappable tiles in the Order tab's category grid.",
+        "Tapping a category reveals all items belonging to it with correct names and prices.",
+        "The Combo category is displayed and sorted appropriately alongside other categories.",
+        "Item counts on category tiles reflect the correct number of items per category."
       ]
     }
   ],
   "constraints": [
-    "Do not alter immutable frontend paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, frontend/src/components/ui",
-    "All Motoko logic must remain in backend/main.mo as a single actor"
+    "Do not remove or overwrite any existing menu items that may have been manually added by the user.",
+    "All backend logic must remain in the single main actor file (backend/main.mo).",
+    "Do not modify any files listed in frontend.immutablePaths."
   ],
   "nonGoals": [
-    "Adding new menu categories or items beyond fixing the load failure",
-    "Changing the visual design or layout of the menu page",
-    "Modifying order, billing, or reports functionality"
+    "Adding images or icons for individual menu items.",
+    "Changing the visual design or layout of the Order tab.",
+    "Adding new order or billing features."
   ],
   "imageRequirements": {
     "required": [],

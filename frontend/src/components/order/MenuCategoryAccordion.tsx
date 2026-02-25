@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import MenuItemCard from './MenuItemCard';
 import type { MenuItem } from '../../backend';
@@ -8,6 +8,8 @@ interface MenuCategoryAccordionProps {
   menuItems: MenuItem[];
   getQuantityInOrder: (id: bigint) => number;
   onAdd: (item: MenuItem) => void;
+  /** When true (search active), auto-expand the accordion */
+  isFiltered?: boolean;
 }
 
 export default function MenuCategoryAccordion({
@@ -15,8 +17,16 @@ export default function MenuCategoryAccordion({
   menuItems,
   getQuantityInOrder,
   onAdd,
+  isFiltered = false,
 }: MenuCategoryAccordionProps) {
   const [isOpen, setIsOpen] = useState(true);
+
+  // Auto-expand when a search filter is active
+  useEffect(() => {
+    if (isFiltered) {
+      setIsOpen(true);
+    }
+  }, [isFiltered]);
 
   // Guard against undefined/null menuItems array
   const safeItems = Array.isArray(menuItems) ? menuItems : [];
@@ -49,7 +59,7 @@ export default function MenuCategoryAccordion({
           isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="p-3 space-y-2">
+        <div className="p-3 grid grid-cols-2 gap-2">
           {safeItems.map((item: MenuItem) => (
             <MenuItemCard
               key={item.id.toString()}

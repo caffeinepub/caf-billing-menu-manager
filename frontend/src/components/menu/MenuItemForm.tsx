@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { CATEGORY_ORDER } from '../../hooks/useQueries';
+import { CATEGORY_ORDER, CATEGORY_DISPLAY_NAMES } from '../../hooks/useQueries';
 
+// Preset categories use the actual backend category names
 const PRESET_CATEGORIES = CATEGORY_ORDER;
 
 interface MenuItemFormProps {
@@ -102,7 +103,7 @@ export default function MenuItemForm({ mode, initialValues, onSubmit, onCancel, 
                       : 'bg-card border-border text-foreground hover:bg-secondary'
                   }`}
                 >
-                  {cat}
+                  {CATEGORY_DISPLAY_NAMES[cat] ?? cat}
                 </button>
               ))}
             </div>

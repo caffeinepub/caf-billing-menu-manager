@@ -1,58 +1,87 @@
 import { Card } from '@/components/ui/card';
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from '@/components/ui/table';
+import { Skeleton } from '@/components/ui/skeleton';
 import { formatCurrencyBigInt, formatDate } from '@/lib/utils';
-import type { Order } from '../../backend';
+import type { DailySales, FinalizedOrder } from '../../backend';
+
+// dayInNanoseconds matches the backend constant: 24 * 60 * 60 * 1_000_000_000
+const DAY_IN_NS = BigInt(24 * 60 * 60) * 1_000_000_000n;
 
 interface DateWiseSalesTableProps {
-  data: Order[];
+  dailySales: DailySales[];
+  orders: FinalizedOrder[];
   isLoading?: boolean;
 }
 
-interface DayGroup {
-  date: string;
-  orderCount: number;
-  total: bigint;
+interface DayRow {
+  dateLabel: string;
+  billCount: number;
+  totalSale: bigint;
 }
 
-function groupByDay(orders: Order[]): DayGroup[] {
-  const map = new Map<string, DayGroup>();
+function buildRows(dailySales: DailySales[], orders: FinalizedOrder[]): DayRow[] {
+  // Build bill count map keyed by date label
+  const billCountMap = new Map<string, number>();
   for (const order of orders) {
-    const dateStr = formatDate(order.timestamp);
-    const existing = map.get(dateStr);
-    if (existing) {
-      existing.orderCount += 1;
-      existing.total += order.total;
-    } else {
-      map.set(dateStr, { date: dateStr, orderCount: 1, total: order.total });
-    }
+    const label = formatDate(order.timestamp);
+    billCountMap.set(label, (billCountMap.get(label) ?? 0) + 1);
   }
-  return Array.from(map.values()).reverse();
+
+  // Build rows from dailySales, converting day index back to a timestamp
+  const rows: DayRow[] = dailySales.map((ds) => {
+    // ds.date is the day index (timestamp / dayInNanoseconds)
+    // Convert back: day * DAY_IN_NS gives nanoseconds at start of that day
+    const nsTimestamp = ds.date * DAY_IN_NS;
+    const dateLabel = formatDate(nsTimestamp);
+    return {
+      dateLabel,
+      billCount: billCountMap.get(dateLabel) ?? 0,
+      totalSale: ds.totalSales,
+    };
+  });
+
+  // Sort chronologically by date label (using the underlying timestamp)
+  const sorted = dailySales
+    .map((ds, i) => ({ ds, row: rows[i] }))
+    .sort((a, b) => (a.ds.date < b.ds.date ? -1 : a.ds.date > b.ds.date ? 1 : 0))
+    .map(({ row }) => row);
+
+  return sorted;
 }
 
-export default function DateWiseSalesTable({ data, isLoading }: DateWiseSalesTableProps) {
+export default function DateWiseSalesTable({ dailySales, orders, isLoading }: DateWiseSalesTableProps) {
   if (isLoading) {
     return (
       <Card className="p-4">
         <div className="space-y-3">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="h-8 bg-muted rounded animate-pulse" />
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-9 w-full rounded" />
           ))}
         </div>
       </Card>
     );
   }
 
-  const grouped = groupByDay(data);
+  const rows = buildRows(dailySales, orders);
 
-  if (grouped.length === 0) {
+  if (rows.length === 0) {
     return (
       <Card className="p-6 text-center">
-        <p className="text-sm text-muted-foreground">No orders in this date range.</p>
+        <p className="text-sm text-muted-foreground">No sales data in this date range.</p>
       </Card>
     );
   }
+
+  const grandTotal = rows.reduce((sum, row) => sum + row.totalSale, 0n);
+  const totalBills = rows.reduce((sum, row) => sum + row.billCount, 0);
 
   return (
     <Card className="overflow-hidden shadow-xs">
@@ -60,21 +89,46 @@ export default function DateWiseSalesTable({ data, isLoading }: DateWiseSalesTab
         <TableHeader>
           <TableRow className="bg-secondary/50">
             <TableHead className="text-xs font-semibold">Date</TableHead>
-            <TableHead className="text-xs font-semibold text-center w-20">Orders</TableHead>
-            <TableHead className="text-xs font-semibold text-right w-24">Revenue</TableHead>
+            <TableHead className="text-xs font-semibold text-center w-28">Total Bills</TableHead>
+            <TableHead className="text-xs font-semibold text-right w-32">Total Sale</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {grouped.map(row => (
-            <TableRow key={row.date}>
-              <TableCell className="text-sm py-2.5">{row.date}</TableCell>
-              <TableCell className="text-sm py-2.5 text-center font-medium">{row.orderCount}</TableCell>
+          {rows.map((row) => (
+            <TableRow key={row.dateLabel}>
+              <TableCell className="text-sm py-2.5">{row.dateLabel}</TableCell>
+              <TableCell className="text-sm py-2.5 text-center font-medium">
+                {row.billCount > 0 ? (
+                  <span className="inline-flex items-center justify-center bg-primary/10 text-primary rounded-full px-2.5 py-0.5 text-xs font-semibold min-w-[2rem]">
+                    {row.billCount}
+                  </span>
+                ) : (
+                  '—'
+                )}
+              </TableCell>
               <TableCell className="text-sm py-2.5 text-right font-semibold text-primary">
-                {formatCurrencyBigInt(row.total)}
+                {formatCurrencyBigInt(row.totalSale)}
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
+        <TableFooter>
+          <TableRow className="bg-secondary/30 font-bold">
+            <TableCell className="text-sm py-2.5 font-bold">Grand Total</TableCell>
+            <TableCell className="text-sm py-2.5 text-center font-bold">
+              {totalBills > 0 ? (
+                <span className="inline-flex items-center justify-center bg-primary/20 text-primary rounded-full px-2.5 py-0.5 text-xs font-bold min-w-[2rem]">
+                  {totalBills}
+                </span>
+              ) : (
+                '—'
+              )}
+            </TableCell>
+            <TableCell className="text-sm py-2.5 text-right font-bold text-primary">
+              {formatCurrencyBigInt(grandTotal)}
+            </TableCell>
+          </TableRow>
+        </TableFooter>
       </Table>
     </Card>
   );

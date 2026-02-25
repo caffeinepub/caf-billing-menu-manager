@@ -1,43 +1,32 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix menu failing to load",
+  "title": "Add full categorized menu with all items and prices to the backend",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Investigate and fix the root cause of the menu failing to load on the Menu Management page, ensuring backend calls succeed and frontend handles responses correctly",
+      "id": "REQ-2",
+      "summary": "Ensure the Order tab's category grid and category item views correctly display all 11 categories and their items as returned from the backend, including the new Combo category, with proper sort order",
       "acceptanceCriteria": [
-        "Navigating to the /menu route displays menu items grouped by category without any error state or loading failure",
-        "The backend actor returns a non-empty list of menu items when queried",
-        "If the menu is empty on first load, the auto-seed logic in MenuManagement.tsx successfully seeds the default menu and displays it",
-        "No console errors or unhandled promise rejections occur when the menu page loads",
-        "The Order page accordion also loads menu items correctly"
+        "All 11 categories appear as tappable tiles in the Order tab's category grid.",
+        "Tapping a category reveals all items belonging to it with correct names and prices.",
+        "The Combo category is displayed and sorted appropriately alongside other categories.",
+        "Item counts on category tiles reflect the correct number of items per category."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/hooks/useQueries.ts",
+          "path": "frontend/src/lib/utils.ts",
           "operation": "modify",
-          "description": "Review and fix the useMenuItemsQuery hook to ensure it properly handles the backend getAllMenuItems response. Add error handling for failed queries and ensure the query key is stable. Verify that mutations correctly invalidate the menu items cache to trigger refetch after seeding or modifications."
+          "description": "Update the getCategorySortIndex function and CATEGORY_ORDER constant to include all 11 categories in the specified order: Tea, Coffee, Sandwich, Toast, Light Snacks, Momos, Burgers, Starters, Refreshers, Combo. Ensure the sort logic correctly handles the new Combo category."
         },
         {
-          "path": "frontend/src/pages/MenuManagement.tsx",
+          "path": "frontend/src/components/order/CategoryGrid.tsx",
           "operation": "modify",
-          "description": "Fix the auto-seed logic to properly handle async operations and error states. Ensure the seeding mutation completes before refetching menu items. Add proper error boundaries and loading states. Verify that the component correctly displays menu items after seeding completes and handles empty states gracefully."
+          "description": "Verify that the category grid correctly displays all 11 categories returned from the backend using the updated getCategorySortIndex utility. Ensure item counts reflect the correct number of items per category. Add the coffee emoji for Coffee category and combo emoji for Combo category if not already present."
         },
         {
-          "path": "frontend/src/components/menu/MenuCategorySection.tsx",
+          "path": "frontend/src/components/order/CategoryItemsView.tsx",
           "operation": "modify",
-          "description": "Add error handling and loading states for menu item operations (edit, delete). Ensure the component gracefully handles empty menu item arrays and displays appropriate feedback when operations fail."
-        },
-        {
-          "path": "frontend/src/pages/OrderTaking.tsx",
-          "operation": "modify",
-          "description": "Review the menu items query usage and ensure it properly handles loading and error states. Verify that the accordion receives valid grouped menu data and displays a helpful message if menu items fail to load."
-        },
-        {
-          "path": "frontend/src/components/order/MenuCategoryAccordion.tsx",
-          "operation": "modify",
-          "description": "Add error handling for cases where grouped menu items fail to load or are malformed. Ensure the component displays an appropriate fallback UI when menu data is unavailable and doesn't break the order page."
+          "description": "Verify that the category items view correctly displays all items for each of the 11 categories, including the new Combo category, with accurate names and prices as returned from the backend."
         }
       ]
     }

@@ -1,12 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Fix the menu failing to load on the Menu Management page.
+**Goal:** Populate the backend menu with all café items across 11 categories and ensure the frontend displays them correctly.
 
 **Planned changes:**
-- Investigate and fix the root cause of the `getMenuItems` backend call failing to return seeded menu items
-- Ensure the frontend correctly handles the response from `getMenuItems` without errors
-- Verify the auto-seed logic in `MenuManagement.tsx` runs successfully when the menu is empty on first load
-- Ensure the Order page accordion also loads menu items correctly
+- Seed the backend with all menu items across 11 categories (Tea, Coffee, Sandwich, Toast, Light Snacks, Momos, Burgers, Starters, Refreshers, Combo) with exact names and prices in INR, only if no menu items are already present
+- Update the frontend category sort order to include all 11 categories: Tea, Coffee, Sandwich, Toast, Light Snacks, Momos, Burgers, Starters, Refreshers, Combo
+- Ensure the Order tab's category grid and item views display all 11 categories and their items as returned from the backend
 
-**User-visible outcome:** The Menu Management page displays menu items grouped by category without any error state, and the Order page accordion also loads menu items correctly.
+**User-visible outcome:** All 11 menu categories with their full item lists and prices appear in the Order tab at startup, including the new Combo category, allowing staff to browse and select any item when creating orders.

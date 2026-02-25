@@ -16,7 +16,7 @@ export default function MenuItemCard({ item, quantityInOrder, onAdd }: MenuItemC
       onClick={() => onAdd(item)}
     >
       <div className="flex-1 min-w-0 pr-3">
-        <p className="font-medium text-sm text-foreground truncate">{item.name}</p>
+        <p className="font-medium text-sm text-foreground leading-snug break-words">{item.name}</p>
         <p className="text-sm font-semibold text-primary mt-0.5">{formatCurrencyBigInt(item.price)}</p>
       </div>
 

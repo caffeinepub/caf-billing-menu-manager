@@ -6,8 +6,13 @@ import CoreOrder "mo:core/Order";
 import Iter "mo:core/Iter";
 import List "mo:core/List";
 import Runtime "mo:core/Runtime";
+import Principal "mo:core/Principal";
 import Migration "migration";
 
+import AccessControl "authorization/access-control";
+import MixinAuthorization "authorization/MixinAuthorization";
+
+// Specify the data migration function in with-clause
 (with migration = Migration.run)
 actor {
   type MenuItem = {
@@ -25,6 +30,7 @@ actor {
   };
 
   type Order = {
+    id : Nat;
     items : [OrderItem];
     subtotal : Nat;
     discount : Nat;
@@ -32,18 +38,43 @@ actor {
     timestamp : Int;
   };
 
+  type FinalizedOrder = {
+    id : Nat;
+    items : [OrderItem];
+    subtotal : Nat;
+    discount : Nat;
+    total : Nat;
+    timestamp : Int;
+    finalized : Bool;
+  };
+
+  type UserProfile = {
+    name : Text;
+  };
+
+  type DailySales = {
+    date : Int;
+    totalSales : Nat;
+  };
+
+  type PreviousDaySales = {
+    totalRevenue : Nat;
+    totalBills : Nat;
+  };
+
   module MenuItem {
     public func compare(menuItem1 : MenuItem, menuItem2 : MenuItem) : CoreOrder.Order {
-      if (menuItem1.id < menuItem2.id) { #less } else if (menuItem1.id == menuItem2.id) { #equal } else {
-        #greater;
-      };
+      if (menuItem1.id < menuItem2.id) { #less } else if (menuItem1.id == menuItem2.id) { #equal } else { #greater };
     };
 
     public func compareByCategory(menuItem1 : MenuItem, menuItem2 : MenuItem) : CoreOrder.Order {
       switch (Text.compare(menuItem1.category, menuItem2.category)) {
-        case (#equal) { if (menuItem1.id < menuItem2.id) { #less } else if (menuItem1.id == menuItem2.id) { #equal } else {
-            #greater;
-          }
+        case (#equal) {
+          if (menuItem1.id < menuItem2.id) {
+            #less;
+          } else if (menuItem1.id == menuItem2.id) {
+            #equal;
+          } else { #greater };
         };
         case (order) { order };
       };
@@ -52,464 +83,54 @@ actor {
 
   module Order {
     public func compare(order1 : Order, order2 : Order) : CoreOrder.Order {
-      if (order1.timestamp < order2.timestamp) { #less } else if (order1.timestamp == order2.timestamp) { #equal } else {
-        #greater;
-      };
+      if (order1.timestamp < order2.timestamp) { #less } else if (order1.timestamp == order2.timestamp) { #equal } else { #greater };
     };
   };
 
-  let menuItems = Map.empty<Nat, MenuItem>();
-  let orders = List.empty<Order>();
+  // Initialize the user system state
+  let accessControlState = AccessControl.initState();
+  include MixinAuthorization(accessControlState);
+
+  var menuItems = Map.empty<Nat, MenuItem>();
+  var orders = List.empty<Order>();
+  var finalizedOrders = List.empty<FinalizedOrder>();
+  let userProfiles = Map.empty<Principal, UserProfile>();
+  var nextOrderId = 1;
+  var nextFinalizedOrderId = 1;
 
   let dayInNanoseconds : Int = 24 * 60 * 60 * 1000000000;
 
-  // Helper function to populate the menu if empty
-  func initializeMenu() {
-    if (menuItems.isEmpty()) {
-      let defaultMenu : [(Nat, MenuItem)] = [
-        (1, {
-          id = 1;
-          name = "Normal Tea";
-          price = 20;
-          category = "Tea";
-        }),
-        (2, {
-          id = 2;
-          name = "Masala Tea";
-          price = 25;
-          category = "Tea";
-        }),
-        (3, {
-          id = 3;
-          name = "Ginger Tea";
-          price = 25;
-          category = "Tea";
-        }),
-        (4, {
-          id = 4;
-          name = "Elaichi Tea";
-          price = 25;
-          category = "Tea";
-        }),
-        (5, {
-          id = 5;
-          name = "Kesar Tea";
-          price = 40;
-          category = "Tea";
-        }),
-        (6, {
-          id = 6;
-          name = "Malai Tea";
-          price = 30;
-          category = "Tea";
-        }),
-        (7, {
-          id = 7;
-          name = "Green Tea";
-          price = 30;
-          category = "Tea";
-        }),
-        (8, {
-          id = 8;
-          name = "Black Tea";
-          price = 20;
-          category = "Tea";
-        }),
-        (9, {
-          id = 9;
-          name = "Lemon Tea";
-          price = 20;
-          category = "Tea";
-        }),
-        (10, {
-          id = 10;
-          name = "Darjeeling Tea";
-          price = 35;
-          category = "Tea";
-        }),
-        (11, {
-          id = 11;
-          name = "Lemon Iced Tea (300 ML)";
-          price = 60;
-          category = "Tea";
-        }),
-        (12, {
-          id = 12;
-          name = "Milk Coffee";
-          price = 40;
-          category = "Coffee";
-        }),
-        (13, {
-          id = 13;
-          name = "Cappuccino";
-          price = 60;
-          category = "Coffee";
-        }),
-        (14, {
-          id = 14;
-          name = "Americano";
-          price = 50;
-          category = "Coffee";
-        }),
-        (15, {
-          id = 15;
-          name = "Iced Americano";
-          price = 70;
-          category = "Coffee";
-        }),
-        (16, {
-          id = 16;
-          name = "Cold Coffee";
-          price = 70;
-          category = "Coffee";
-        }),
-        (17, {
-          id = 17;
-          name = "Veg Sandwich";
-          price = 60;
-          category = "Sandwich";
-        }),
-        (18, {
-          id = 18;
-          name = "Cheese Corn Sandwich";
-          price = 85;
-          category = "Sandwich";
-        }),
-        (19, {
-          id = 19;
-          name = "Paneer Sandwich";
-          price = 100;
-          category = "Sandwich";
-        }),
-        (20, {
-          id = 20;
-          name = "Double Jumbo Sandwich";
-          price = 120;
-          category = "Sandwich";
-        }),
-        (21, {
-          id = 21;
-          name = "Butter Toast";
-          price = 40;
-          category = "Toast";
-        }),
-        (22, {
-          id = 22;
-          name = "Peri Peri Toast";
-          price = 50;
-          category = "Toast";
-        }),
-        (23, {
-          id = 23;
-          name = "Jam Toast";
-          price = 40;
-          category = "Toast";
-        }),
-        (24, {
-          id = 24;
-          name = "Malai Toast";
-          price = 50;
-          category = "Toast";
-        }),
-        (25, {
-          id = 25;
-          name = "Wai Wai (Soup)";
-          price = 45;
-          category = "Light Snacks";
-        }),
-        (26, {
-          id = 26;
-          name = "Wai Wai (Dry)";
-          price = 45;
-          category = "Light Snacks";
-        }),
-        (27, {
-          id = 27;
-          name = "Maggi (Soup)";
-          price = 45;
-          category = "Light Snacks";
-        }),
-        (28, {
-          id = 28;
-          name = "Maggi (Dry)";
-          price = 45;
-          category = "Light Snacks";
-        }),
-        (29, {
-          id = 29;
-          name = "Butter Maggi";
-          price = 55;
-          category = "Light Snacks";
-        }),
-        (30, {
-          id = 30;
-          name = "Vegetables Maggi";
-          price = 60;
-          category = "Light Snacks";
-        }),
-        (31, {
-          id = 31;
-          name = "Cheese Maggi";
-          price = 65;
-          category = "Light Snacks";
-        }),
-        (32, {
-          id = 32;
-          name = "Corn Maggi";
-          price = 70;
-          category = "Light Snacks";
-        }),
-        (33, {
-          id = 33;
-          name = "Cheese Corn Maggi";
-          price = 75;
-          category = "Light Snacks";
-        }),
-        (34, {
-          id = 34;
-          name = "Pasta (Red)";
-          price = 85;
-          category = "Light Snacks";
-        }),
-        (35, {
-          id = 35;
-          name = "Pasta (White)";
-          price = 85;
-          category = "Light Snacks";
-        }),
-        (36, {
-          id = 36;
-          name = "Veg Momo (Steam – 8 pcs)";
-          price = 50;
-          category = "Momos";
-        }),
-        (37, {
-          id = 37;
-          name = "Veg Momo (Fry – 6 pcs)";
-          price = 60;
-          category = "Momos";
-        }),
-        (38, {
-          id = 38;
-          name = "Cheese Momo (Steam – 8 pcs)";
-          price = 70;
-          category = "Momos";
-        }),
-        (39, {
-          id = 39;
-          name = "Cheese Momo (Fry – 6 pcs)";
-          price = 80;
-          category = "Momos";
-        }),
-        (40, {
-          id = 40;
-          name = "Corn Cheese Momo (Steam – 8 pcs)";
-          price = 80;
-          category = "Momos";
-        }),
-        (41, {
-          id = 41;
-          name = "Corn Cheese Momo (Fry – 6 pcs)";
-          price = 90;
-          category = "Momos";
-        }),
-        (42, {
-          id = 42;
-          name = "Paneer Momo (Steam – 8 pcs)";
-          price = 90;
-          category = "Momos";
-        }),
-        (43, {
-          id = 43;
-          name = "Paneer Momo (Fry – 6 pcs)";
-          price = 100;
-          category = "Momos";
-        }),
-        (44, {
-          id = 44;
-          name = "Kurkure Momo";
-          price = 80;
-          category = "Momos";
-        }),
-        (45, {
-          id = 45;
-          name = "Chilli Momo";
-          price = 80;
-          category = "Momos";
-        }),
-        (46, {
-          id = 46;
-          name = "Veg Burger";
-          price = 60;
-          category = "Burgers";
-        }),
-        (47, {
-          id = 47;
-          name = "Cheese Burger";
-          price = 70;
-          category = "Burgers";
-        }),
-        (48, {
-          id = 48;
-          name = "Paneer Burger";
-          price = 90;
-          category = "Burgers";
-        }),
-        (49, {
-          id = 49;
-          name = "French Fries";
-          price = 70;
-          category = "Starters";
-        }),
-        (50, {
-          id = 50;
-          name = "Peri Peri Fries";
-          price = 85;
-          category = "Starters";
-        }),
-        (51, {
-          id = 51;
-          name = "American Corn";
-          price = 80;
-          category = "Starters";
-        }),
-        (52, {
-          id = 52;
-          name = "Chilli Potato";
-          price = 90;
-          category = "Starters";
-        }),
-        (53, {
-          id = 53;
-          name = "Baby Corn Chilli";
-          price = 100;
-          category = "Starters";
-        }),
-        (54, {
-          id = 54;
-          name = "Paneer Pakora (6 pcs)";
-          price = 90;
-          category = "Starters";
-        }),
-        (55, {
-          id = 55;
-          name = "Smileys (6 pcs)";
-          price = 75;
-          category = "Starters";
-        }),
-        (56, {
-          id = 56;
-          name = "Potato Cheese Shots (7 pcs)";
-          price = 70;
-          category = "Starters";
-        }),
-        (57, {
-          id = 57;
-          name = "Masala Coke";
-          price = 50;
-          category = "Refreshers";
-        }),
-        (58, {
-          id = 58;
-          name = "Fresh Lime Soda";
-          price = 50;
-          category = "Refreshers";
-        }),
-        (59, {
-          id = 59;
-          name = "Mojito";
-          price = 75;
-          category = "Refreshers";
-        }),
-        (60, {
-          id = 60;
-          name = "Masala / Ginger Tea + Butter Toast";
-          price = 55;
-          category = "Combo";
-        }),
-        (61, {
-          id = 61;
-          name = "Normal Tea + Malai Toast";
-          price = 65;
-          category = "Combo";
-        }),
-        (62, {
-          id = 62;
-          name = "Veg Sandwich + Normal Tea";
-          price = 75;
-          category = "Combo";
-        }),
-        (63, {
-          id = 63;
-          name = "Maggi + Milk Coffee";
-          price = 80;
-          category = "Combo";
-        }),
-        (64, {
-          id = 64;
-          name = "French Fries + Cold Coffee";
-          price = 135;
-          category = "Combo";
-        }),
-        (65, {
-          id = 65;
-          name = "Corn Cheese Sandwich + Cold Coffee";
-          price = 150;
-          category = "Combo";
-        }),
-        (66, {
-          id = 66;
-          name = "Veg Momo + Lemon Iced Tea";
-          price = 105;
-          category = "Combo";
-        }),
-        (67, {
-          id = 67;
-          name = "Paneer Pakora (6 pcs) + Masala Tea";
-          price = 110;
-          category = "Combo";
-        }),
-        (68, {
-          id = 68;
-          name = "Pasta + Cold Coffee";
-          price = 150;
-          category = "Combo";
-        }),
-        (69, {
-          id = 69;
-          name = "Veg Burger + Smileys (6 pcs) + Tea";
-          price = 140;
-          category = "Combo";
-        }),
-        (70, {
-          id = 70;
-          name = "Chilli Potato + Green Tea";
-          price = 115;
-          category = "Combo";
-        }),
-        (71, {
-          id = 71;
-          name = "Paneer Sandwich + Peri Peri Fries";
-          price = 180;
-          category = "Combo";
-        }),
-        (72, {
-          id = 72;
-          name = "Cheese Burger + Peri Peri Fries + Cold Coffee";
-          price = 210;
-          category = "Combo";
-        }),
-      ];
+  // Define Int min and max values based on 64-bit range
+  let intMinValue : Int = -9223372036854775808;
+  let intMaxValue : Int = 9223372036854775807;
 
-      for ((id, item) in defaultMenu.values()) {
-        menuItems.add(id, item);
-      };
+  // User Profile Management
+  public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view profiles");
     };
+    userProfiles.get(caller);
   };
 
-  // Menu Management
+  public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
+    if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Can only view your own profile");
+    };
+    userProfiles.get(user);
+  };
+
+  public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can save profiles");
+    };
+    userProfiles.add(caller, profile);
+  };
+
+  // Menu Management - Admin only
   public shared ({ caller }) func addMenuItem(name : Text, price : Nat, category : Text) : async Nat {
-    initializeMenu();
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can perform this action");
+    };
     let id = menuItems.size() + 1;
     let item : MenuItem = {
       id;
@@ -522,7 +143,9 @@ actor {
   };
 
   public shared ({ caller }) func editMenuItem(id : Nat, name : Text, price : Nat, category : Text) : async () {
-    initializeMenu();
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can perform this action");
+    };
     switch (menuItems.get(id)) {
       case (null) {
         Runtime.trap("Menu item not found");
@@ -540,14 +163,17 @@ actor {
   };
 
   public shared ({ caller }) func deleteMenuItem(id : Nat) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can perform this action");
+    };
     if (not menuItems.containsKey(id)) {
       Runtime.trap("Menu item not found");
     };
     menuItems.remove(id);
   };
 
-  public query ({ caller }) func getMenuItemsByCategory() : async [(Text, [MenuItem])] {
-    initializeMenu();
+  // Menu Queries - Public (no auth required)
+  public query func getMenuItemsByCategory() : async [(Text, [MenuItem])] {
     let categories = List.empty<Text>();
     let categoryMap = Map.empty<Text, [MenuItem]>();
 
@@ -575,13 +201,15 @@ actor {
     categoryMap.toArray();
   };
 
-  public query ({ caller }) func getAllMenuItems() : async [MenuItem] {
-    initializeMenu();
+  public query func getAllMenuItems() : async [MenuItem] {
     menuItems.values().toArray();
   };
 
-  // Order Finalization - Tax No Longer Applied
-  public shared ({ caller }) func finalizeOrder(orderItems : [OrderItem], discount : Nat) : async Order {
+  // Order Finalization - Users and admins can record orders (staff taking orders at the counter)
+  public shared ({ caller }) func finalizeOrder(orderItems : [OrderItem], discount : Nat) : async FinalizedOrder {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can perform this action");
+    };
     let subtotal = orderItems.foldLeft(
       0,
       func(acc, item) {
@@ -593,31 +221,63 @@ actor {
     let total = if (discount > subtotal) { 0 } else { subtotal - discount };
     let timestamp = 0; // Placeholder value until time support is implemented
 
-    let order : Order = {
+    let order : FinalizedOrder = {
+      id = nextFinalizedOrderId;
       items = orderItems;
       subtotal;
       discount;
       total;
       timestamp;
+      finalized = true;
     };
 
-    orders.add(order);
+    nextFinalizedOrderId += 1;
+    finalizedOrders.add(order);
     order;
   };
 
-  // Sales Reports
+  // New function: deleteOrder
+  public shared ({ caller }) func deleteOrder(orderId : Nat) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user)) and not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only users or admins can perform this action");
+    };
+
+    let filteredOrders = orders.toArray().filter(
+      func(order) {
+        order.id != orderId;
+      }
+    );
+
+    orders.clear();
+    for (order in filteredOrders.values()) {
+      orders.add(order);
+    };
+  };
+
+  // Order Tracking - Get active (not finalized) orders (Users/admins)
+  public query ({ caller }) func getActiveOrders() : async [Order] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user)) and not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only users or admins can perform this action");
+    };
+    orders.toArray();
+  };
+
+  // Sales Reports - Now user role required for all callers
   public query ({ caller }) func getDailySalesSummary() : async {
     itemCount : Nat;
     total : Nat;
     discount : Nat;
   } {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can perform this action");
+    };
     let today = 0 / dayInNanoseconds; // Placeholder value until time support is implemented
 
     var itemCount = 0;
     var total = 0;
     var discount = 0;
 
-    for (order in orders.values()) {
+    for (order in finalizedOrders.values()) {
       let orderDay = order.timestamp / dayInNanoseconds;
       if (orderDay == today) {
         itemCount += order.items.size();
@@ -634,9 +294,12 @@ actor {
   };
 
   public query ({ caller }) func getItemWiseSales() : async [(Text, Nat, Nat)] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can perform this action");
+    };
     let salesMap = Map.empty<Text, (Nat, Nat)>();
 
-    for (order in orders.values()) {
+    for (order in finalizedOrders.values()) {
       for (item in order.items.values()) {
         switch (salesMap.get(item.name)) {
           case (null) {
@@ -657,11 +320,137 @@ actor {
     );
   };
 
-  public query ({ caller }) func getDateWiseSalesHistory(startDate : Int, endDate : Int) : async [Order] {
-    orders.toArray().filter(
+  public query ({ caller }) func getDateWiseSalesHistory(startDate : Int, endDate : Int) : async [FinalizedOrder] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can perform this action");
+    };
+    finalizedOrders.toArray().filter(
       func(order) {
         order.timestamp >= startDate and order.timestamp <= endDate
       }
     ).sort();
+  };
+
+  // New method to retrieve orders by a specific date range
+  public query ({ caller }) func getTodaySales(startTimestamp : Int, endTimestamp : Int) : async [FinalizedOrder] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can access this method");
+    };
+
+    let filteredOrders = finalizedOrders.toArray().filter(
+      func(order) {
+        order.timestamp >= startTimestamp and order.timestamp <= endTimestamp
+      }
+    );
+
+    filteredOrders.sort();
+  };
+
+  // New backend query for day-wise total sales
+  public query ({ caller }) func getDayWiseTotalSales(startDate : ?Int, endDate : ?Int) : async [DailySales] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can perform this action");
+    };
+
+    // Use provided date range or default to cover all records
+    let start : Int = switch (startDate) {
+      case (?d) { d };
+      case (null) { intMinValue };
+    };
+    let end : Int = switch (endDate) {
+      case (?d) { d };
+      case (null) { intMaxValue };
+    };
+
+    let salesMap = Map.empty<Int, Nat>();
+
+    func updateSalesMap(timestamp : Int, total : Nat) {
+      let day = timestamp / dayInNanoseconds;
+      let existingTotal = switch (salesMap.get(day)) {
+        case (?oldTotal) { oldTotal };
+        case (null) { 0 };
+      };
+      salesMap.add(day, existingTotal + total);
+    };
+
+    for (order in finalizedOrders.values()) {
+      if (order.timestamp >= start and order.timestamp <= end) {
+        updateSalesMap(order.timestamp, order.total);
+      };
+    };
+
+    salesMap.toArray().map(
+      func((date, totalSales)) { { date; totalSales } }
+    );
+  };
+
+  // New backend query for monthly total sales
+  public query ({ caller }) func getMonthlyTotalSales() : async [(Int, Nat)] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can perform this action");
+    };
+
+    let salesMap = Map.empty<Int, Nat>();
+    let daysInMonth = 30;
+
+    func updateSalesMap(timestamp : Int, total : Nat) {
+      let month = timestamp / (daysInMonth * dayInNanoseconds);
+      let existingTotal = switch (salesMap.get(month)) {
+        case (?oldTotal) { oldTotal };
+        case (null) { 0 };
+      };
+      salesMap.add(month, existingTotal + total);
+    };
+
+    for (order in finalizedOrders.values()) {
+      updateSalesMap(order.timestamp, order.total);
+    };
+
+    salesMap.toArray();
+  };
+
+  public query ({ caller }) func getPreviousDaySales() : async ?PreviousDaySales {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can perform this action");
+    };
+
+    let currentTimeStamp = 0; // Placeholder for current time
+    let today = currentTimeStamp / dayInNanoseconds;
+    let previousDay = today - 1;
+
+    var totalRevenue = 0;
+    var totalBills = 0;
+
+    for (order in finalizedOrders.values()) {
+      let orderDay = order.timestamp / dayInNanoseconds;
+      if (orderDay == previousDay) {
+        totalRevenue += order.total;
+        totalBills += 1;
+      };
+    };
+
+    if (totalBills == 0) { null } else {
+      ?{ totalRevenue; totalBills };
+    };
+  };
+
+  public shared ({ caller }) func clearActiveOrders() : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can clear active orders");
+    };
+    orders.clear();
+  };
+
+  // Clear all persisted state - Admin only
+  public shared ({ caller }) func clearAllState() : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can clear all state");
+    };
+    menuItems.clear();
+    orders.clear();
+    finalizedOrders.clear();
+    userProfiles.clear();
+    nextOrderId := 1;
+    nextFinalizedOrderId := 1;
   };
 };

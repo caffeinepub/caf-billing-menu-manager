@@ -1,23 +1,40 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import type { MenuItem, OrderItem, Order } from '../backend';
+import type { MenuItem, UserProfile, DailySales, PreviousDaySales } from '../backend';
+import { dateToNanoseconds, startOfDay, endOfDay } from '../lib/utils';
 
-// Canonical category order
+// ─── Category ordering ────────────────────────────────────────────────────────
+// These match the actual backend category names used in migration.mo
 export const CATEGORY_ORDER = [
-  'Tea',
-  'Coffee',
+  'Tea (Non-Alcoholic Beverages)',
+  'Coffee (Non-Alcoholic Beverages)',
   'Sandwich',
   'Toast',
   'Light Snacks',
-  'Momos',
-  'Burgers',
-  'Starters',
-  'Refreshers',
+  'Momo',
+  'Burger',
+  'Starter',
+  'Refresher',
   'Combo',
 ];
 
-// Sort categories array by canonical order
-export function sortCategoriesByOrder(categories: Array<[string, MenuItem[]]>): Array<[string, MenuItem[]]> {
+// Friendly display names for preset categories shown in the form
+export const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
+  'Tea (Non-Alcoholic Beverages)': 'Tea',
+  'Coffee (Non-Alcoholic Beverages)': 'Coffee',
+  'Sandwich': 'Sandwich',
+  'Toast': 'Toast',
+  'Light Snacks': 'Light Snacks',
+  'Momo': 'Momos',
+  'Burger': 'Burgers',
+  'Starter': 'Starters',
+  'Refresher': 'Refreshers',
+  'Combo': 'Combo',
+};
+
+export function sortCategoriesByOrder(
+  categories: Array<[string, MenuItem[]]>
+): Array<[string, MenuItem[]]> {
   return [...categories].sort(([a], [b]) => {
     const ai = CATEGORY_ORDER.indexOf(a);
     const bi = CATEGORY_ORDER.indexOf(b);
@@ -28,67 +45,52 @@ export function sortCategoriesByOrder(categories: Array<[string, MenuItem[]]>): 
   });
 }
 
-// Group a flat MenuItem array into [category, items[]] pairs
-function groupByCategory(items: MenuItem[]): Array<[string, MenuItem[]]> {
-  const map = new Map<string, MenuItem[]>();
-  for (const item of items) {
-    const existing = map.get(item.category);
-    if (existing) {
-      existing.push(item);
-    } else {
-      map.set(item.category, [item]);
-    }
-  }
-  return Array.from(map.entries());
-}
-
-// ─── Menu Queries ────────────────────────────────────────────────────────────
+// ─── Menu Queries ─────────────────────────────────────────────────────────────
 
 export function useMenuItemsByCategory() {
   const { actor, isFetching } = useActor();
 
-  return useQuery<Array<[string, MenuItem[]]>>({
+  return useQuery({
     queryKey: ['menuItemsByCategory'],
     queryFn: async () => {
       if (!actor) return [];
-      // Use getAllMenuItems and group client-side — more reliable than
-      // getMenuItemsByCategory which depends on server-side state mutation in queries
-      const allItems = await actor.getAllMenuItems();
-      if (!Array.isArray(allItems)) return [];
-      return groupByCategory(allItems);
+      return actor.getMenuItemsByCategory();
     },
     enabled: !!actor && !isFetching,
-    retry: 3,
-    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
-    staleTime: 0,
-    refetchOnMount: true,
   });
 }
 
-export function useSeedDefaultMenu() {
+export function useGetCallerUserProfile() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  const query = useQuery<UserProfile | null>({
+    queryKey: ['currentUserProfile'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getCallerUserProfile();
+    },
+    enabled: !!actor && !actorFetching,
+    retry: false,
+  });
+
+  return {
+    ...query,
+    isLoading: actorFetching || query.isLoading,
+    isFetched: !!actor && query.isFetched,
+  };
+}
+
+export function useSaveCallerUserProfile() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async () => {
-      if (!actor) throw new Error('Actor not initialized');
-      // Trigger backend's initializeMenu() by calling addMenuItem with a
-      // temporary placeholder item. The backend seeds all 72 items on the
-      // first update call when the menu is empty, then adds this placeholder.
-      // We immediately delete the placeholder to leave exactly the 72 seeded items.
-      const tempId = await actor.addMenuItem('__seed_init__', 0n, '__init__');
-      try {
-        await actor.deleteMenuItem(tempId);
-      } catch {
-        // Best-effort cleanup; ignore if delete fails
-      }
+    mutationFn: async (profile: UserProfile) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.saveCallerUserProfile(profile);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['menuItemsByCategory'] });
-    },
-    onError: () => {
-      // Still try to refetch in case partial seeding occurred
-      queryClient.invalidateQueries({ queryKey: ['menuItemsByCategory'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
     },
   });
 }
@@ -99,7 +101,7 @@ export function useAddMenuItem() {
 
   return useMutation({
     mutationFn: async ({ name, price, category }: { name: string; price: bigint; category: string }) => {
-      if (!actor) throw new Error('Actor not initialized');
+      if (!actor) throw new Error('Actor not available');
       return actor.addMenuItem(name, price, category);
     },
     onSuccess: () => {
@@ -114,7 +116,7 @@ export function useEditMenuItem() {
 
   return useMutation({
     mutationFn: async ({ id, name, price, category }: { id: bigint; name: string; price: bigint; category: string }) => {
-      if (!actor) throw new Error('Actor not initialized');
+      if (!actor) throw new Error('Actor not available');
       return actor.editMenuItem(id, name, price, category);
     },
     onSuccess: () => {
@@ -129,7 +131,7 @@ export function useDeleteMenuItem() {
 
   return useMutation({
     mutationFn: async (id: bigint) => {
-      if (!actor) throw new Error('Actor not initialized');
+      if (!actor) throw new Error('Actor not available');
       return actor.deleteMenuItem(id);
     },
     onSuccess: () => {
@@ -138,26 +140,22 @@ export function useDeleteMenuItem() {
   });
 }
 
-// ─── Order Mutations ─────────────────────────────────────────────────────────
-
-export function useFinalizeOrder() {
+export function useDeleteOrder() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ orderItems, discount }: { orderItems: OrderItem[]; discount: bigint }) => {
-      if (!actor) throw new Error('Actor not initialized');
-      return actor.finalizeOrder(orderItems, discount);
+    mutationFn: async (orderId: bigint) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.deleteOrder(orderId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['dailySalesSummary'] });
-      queryClient.invalidateQueries({ queryKey: ['itemWiseSales'] });
-      queryClient.invalidateQueries({ queryKey: ['dateWiseSalesHistory'] });
+      queryClient.invalidateQueries({ queryKey: ['activeOrders'] });
     },
   });
 }
 
-// ─── Reports Queries ─────────────────────────────────────────────────────────
+// ─── Reports Queries ──────────────────────────────────────────────────────────
 
 export function useDailySalesSummary() {
   const { actor, isFetching } = useActor();
@@ -165,10 +163,14 @@ export function useDailySalesSummary() {
   return useQuery<{ total: bigint; itemCount: bigint; discount: bigint }>({
     queryKey: ['dailySalesSummary'],
     queryFn: async () => {
-      if (!actor) return { total: 0n, itemCount: 0n, discount: 0n };
+      if (!actor) throw new Error('Actor not available');
       return actor.getDailySalesSummary();
     },
     enabled: !!actor && !isFetching,
+    retry: 1,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -178,22 +180,108 @@ export function useItemWiseSales() {
   return useQuery<Array<[string, bigint, bigint]>>({
     queryKey: ['itemWiseSales'],
     queryFn: async () => {
-      if (!actor) return [];
+      if (!actor) throw new Error('Actor not available');
       return actor.getItemWiseSales();
     },
     enabled: !!actor && !isFetching,
+    retry: 1,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 }
 
 export function useDateWiseSalesHistory(startDate: bigint, endDate: bigint) {
   const { actor, isFetching } = useActor();
 
-  return useQuery<Order[]>({
+  return useQuery({
     queryKey: ['dateWiseSalesHistory', startDate.toString(), endDate.toString()],
     queryFn: async () => {
-      if (!actor) return [];
+      if (!actor) throw new Error('Actor not available');
       return actor.getDateWiseSalesHistory(startDate, endDate);
     },
     enabled: !!actor && !isFetching,
+    retry: 1,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+  });
+}
+
+export function useGetDayWiseTotalSales(startDate: bigint | null, endDate: bigint | null) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<DailySales[]>({
+    queryKey: ['dayWiseTotalSales', startDate?.toString() ?? 'null', endDate?.toString() ?? 'null'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getDayWiseTotalSales(startDate, endDate);
+    },
+    enabled: !!actor && !isFetching,
+    retry: 1,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+  });
+}
+
+export function useGetMonthlyTotalSales() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Array<[bigint, bigint]>>({
+    queryKey: ['monthlyTotalSales'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getMonthlyTotalSales();
+    },
+    enabled: !!actor && !isFetching,
+    retry: 1,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+  });
+}
+
+export function usePreviousDaySales() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<PreviousDaySales | null>({
+    queryKey: ['previousDaySales'],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getPreviousDaySales();
+    },
+    enabled: !!actor && !isFetching,
+    retry: 1,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+  });
+}
+
+// ─── Today's Sales ────────────────────────────────────────────────────────────
+
+export function useTodaySales() {
+  const { actor, isFetching } = useActor();
+
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  const startNs = dateToNanoseconds(startOfDay(today));
+  const endNs = dateToNanoseconds(endOfDay(today));
+
+  return useQuery({
+    queryKey: ['todaySales', todayStr],
+    queryFn: async () => {
+      if (!actor) return [];
+      try {
+        return await actor.getTodaySales(startNs, endNs);
+      } catch {
+        return [];
+      }
+    },
+    enabled: !!actor && !isFetching,
+    retry: false,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 }

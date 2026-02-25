@@ -6,38 +6,41 @@ import BillLayout from '../components/bill/BillLayout';
 import type { ActiveOrderItem, DiscountType } from '../hooks/useOrderState';
 
 interface BillData {
-  items: ActiveOrderItem[];
+  items: Array<{
+    menuItemId: string;
+    name: string;
+    quantity: number;
+    price: number;
+  }>;
   subtotal: number;
-  discountType: DiscountType;
-  discountValue: number;
+  discount: number;
   discountAmount: number;
   total: number;
-  timestamp: string; // stored as string with 'n' suffix for bigint
-}
-
-function parseBillData(raw: string): BillData & { timestamp: bigint } | null {
-  try {
-    const parsed = JSON.parse(raw, (_, v) => {
-      if (typeof v === 'string' && v.endsWith('n') && /^\d+n$/.test(v)) {
-        return BigInt(v.slice(0, -1));
-      }
-      return v;
-    });
-    return parsed;
-  } catch {
-    return null;
-  }
+  timestamp: number;
+  discountType: DiscountType;
+  discountValue: number;
 }
 
 export default function BillView() {
   const navigate = useNavigate();
-  const [billData, setBillData] = useState<(BillData & { timestamp: bigint }) | null>(null);
+  const [billData, setBillData] = useState<BillData | null>(null);
+  const [parseError, setParseError] = useState(false);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem('currentBill');
-    if (raw) {
-      const parsed = parseBillData(raw);
+    try {
+      const raw = sessionStorage.getItem('billData');
+      if (!raw) {
+        setParseError(true);
+        return;
+      }
+      const parsed: BillData = JSON.parse(raw);
+      if (!parsed || !Array.isArray(parsed.items)) {
+        setParseError(true);
+        return;
+      }
       setBillData(parsed);
+    } catch {
+      setParseError(true);
     }
   }, []);
 
@@ -46,11 +49,11 @@ export default function BillView() {
   };
 
   const handleNewOrder = () => {
-    sessionStorage.removeItem('currentBill');
+    sessionStorage.removeItem('billData');
     navigate({ to: '/order' });
   };
 
-  if (!billData) {
+  if (parseError) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
         <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
@@ -64,6 +67,22 @@ export default function BillView() {
       </div>
     );
   }
+
+  if (!billData) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <p className="text-muted-foreground text-sm">Loading bill…</p>
+      </div>
+    );
+  }
+
+  // Convert plain number items back to ActiveOrderItem shape (bigint fields)
+  const activeItems: ActiveOrderItem[] = billData.items.map(i => ({
+    menuItemId: BigInt(i.menuItemId),
+    name: i.name,
+    quantity: i.quantity,
+    price: BigInt(i.price),
+  }));
 
   return (
     <div className="min-h-screen bg-background">
@@ -84,13 +103,13 @@ export default function BillView() {
       <div className="py-6 px-4">
         <div className="bg-white rounded-xl shadow-card overflow-hidden border border-border">
           <BillLayout
-            items={billData.items}
+            items={activeItems}
             subtotal={billData.subtotal}
             discountType={billData.discountType}
             discountValue={billData.discountValue}
             discountAmount={billData.discountAmount}
             total={billData.total}
-            timestamp={billData.timestamp}
+            timestamp={BigInt(billData.timestamp)}
           />
         </div>
 

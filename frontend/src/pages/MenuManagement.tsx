@@ -1,16 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Plus, UtensilsCrossed, RefreshCw, AlertCircle, Loader2 } from 'lucide-react';
+import { Plus, UtensilsCrossed, RefreshCw, AlertCircle } from 'lucide-react';
 import {
   useMenuItemsByCategory,
   useAddMenuItem,
   useEditMenuItem,
   useDeleteMenuItem,
-  useSeedDefaultMenu,
   sortCategoriesByOrder,
 } from '../hooks/useQueries';
+import { useAdminRole } from '../hooks/useAdminRole';
 import MenuCategorySection from '../components/menu/MenuCategorySection';
 import MenuItemForm from '../components/menu/MenuItemForm';
 
@@ -18,30 +18,19 @@ export default function MenuManagement() {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<bigint | null>(null);
   const [deletingId, setDeletingId] = useState<bigint | null>(null);
-  const seedAttemptedRef = useRef(false);
 
-  const { data: categories, isLoading, error, refetch, isFetching } = useMenuItemsByCategory();
+  const {
+    data: categories,
+    isLoading,
+    error,
+    refetch,
+    isFetching,
+  } = useMenuItemsByCategory();
+
   const addMutation = useAddMenuItem();
   const editMutation = useEditMenuItem();
   const deleteMutation = useDeleteMenuItem();
-  const seedMutation = useSeedDefaultMenu();
-
-  // Auto-seed default menu when the menu is empty after a successful load.
-  // Use a ref to prevent repeated seed attempts across re-renders.
-  useEffect(() => {
-    if (
-      !isLoading &&
-      !isFetching &&
-      !error &&
-      !seedAttemptedRef.current &&
-      !seedMutation.isPending &&
-      Array.isArray(categories) &&
-      categories.length === 0
-    ) {
-      seedAttemptedRef.current = true;
-      seedMutation.mutate();
-    }
-  }, [isLoading, isFetching, error, categories, seedMutation]);
+  const { isAdmin, isLoading: roleLoading } = useAdminRole();
 
   const handleAdd = async (values: { name: string; price: number; category: string }) => {
     await addMutation.mutateAsync({
@@ -78,8 +67,7 @@ export default function MenuManagement() {
   // Sort categories in canonical order before rendering
   const sortedCategories = Array.isArray(categories) ? sortCategoriesByOrder(categories) : [];
   const totalItems = sortedCategories.reduce((sum, [, items]) => sum + (Array.isArray(items) ? items.length : 0), 0);
-  const isSeeding = seedMutation.isPending;
-  const showLoading = isLoading || isSeeding;
+  const showLoading = isLoading || roleLoading;
 
   return (
     <div className="px-4 py-5 space-y-5">
@@ -94,44 +82,40 @@ export default function MenuManagement() {
           </p>
         </div>
 
-        <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm" className="h-10 gap-1.5">
-              <Plus size={16} />
-              Add Item
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-sm mx-4">
-            <DialogHeader>
-              <DialogTitle>Add Menu Item</DialogTitle>
-            </DialogHeader>
-            <MenuItemForm
-              mode="create"
-              isLoading={addMutation.isPending}
-              onSubmit={handleAdd}
-              onCancel={() => setAddDialogOpen(false)}
-            />
-          </DialogContent>
-        </Dialog>
+        {/* Add Item button — admin only */}
+        {isAdmin && (
+          <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="h-10 gap-1.5">
+                <Plus size={16} />
+                Add Item
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-sm mx-4">
+              <DialogHeader>
+                <DialogTitle>Add Menu Item</DialogTitle>
+              </DialogHeader>
+              <MenuItemForm
+                mode="create"
+                isLoading={addMutation.isPending}
+                onSubmit={handleAdd}
+                onCancel={() => setAddDialogOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
-      {/* Loading / Seeding State */}
+      {/* Loading State */}
       {showLoading && (
         <div className="space-y-4">
-          {isSeeding && !isLoading ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
-              <Loader2 size={28} className="animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground">Setting up menu…</p>
+          {[1, 2, 3].map(i => (
+            <div key={i} className="space-y-2">
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-14 w-full rounded-lg" />
+              <Skeleton className="h-14 w-full rounded-lg" />
             </div>
-          ) : (
-            [1, 2, 3].map(i => (
-              <div key={i} className="space-y-2">
-                <Skeleton className="h-5 w-32" />
-                <Skeleton className="h-14 w-full rounded-lg" />
-                <Skeleton className="h-14 w-full rounded-lg" />
-              </div>
-            ))
-          )}
+          ))}
         </div>
       )}
 
@@ -151,10 +135,7 @@ export default function MenuManagement() {
             variant="outline"
             size="sm"
             className="gap-2"
-            onClick={() => {
-              seedAttemptedRef.current = false;
-              refetch();
-            }}
+            onClick={() => refetch()}
             disabled={isFetching}
           >
             <RefreshCw size={14} className={isFetching ? 'animate-spin' : ''} />
@@ -163,7 +144,7 @@ export default function MenuManagement() {
         </div>
       )}
 
-      {/* Empty State — only shown after seeding attempt failed or was skipped */}
+      {/* Empty State */}
       {!showLoading && !error && sortedCategories.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
@@ -171,30 +152,35 @@ export default function MenuManagement() {
           </div>
           <h3 className="font-display font-semibold text-base text-foreground">No menu items yet</h3>
           <p className="text-sm text-muted-foreground mt-1 max-w-[200px]">
-            Add your first item to start building your menu
+            {isAdmin
+              ? 'Add your first item to start building your menu'
+              : 'The menu is currently empty. Please check back later.'}
           </p>
-          <Button
-            className="mt-4 gap-1.5"
-            onClick={() => setAddDialogOpen(true)}
-          >
-            <Plus size={16} />
-            Add First Item
-          </Button>
+          {isAdmin && (
+            <Button
+              className="mt-4 gap-1.5"
+              onClick={() => setAddDialogOpen(true)}
+            >
+              <Plus size={16} />
+              Add First Item
+            </Button>
+          )}
         </div>
       )}
 
-      {/* Categories — rendered in canonical order */}
+      {/* Menu Categories */}
       {!showLoading && !error && sortedCategories.length > 0 && (
         <div className="space-y-6">
           {sortedCategories.map(([category, items]) => (
             <MenuCategorySection
               key={category}
               category={category}
-              items={Array.isArray(items) ? items : []}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
+              items={items}
+              isAdmin={isAdmin}
               editingId={editingId}
               deletingId={deletingId}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
             />
           ))}
         </div>
