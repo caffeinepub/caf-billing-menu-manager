@@ -1,9 +1,8 @@
 import { Link, useRouterState } from '@tanstack/react-router';
-import { UtensilsCrossed, ShoppingCart, BarChart3 } from 'lucide-react';
+import { ShoppingCart, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const tabs = [
-  { path: '/menu', label: 'Menu', icon: UtensilsCrossed },
   { path: '/order', label: 'Order', icon: ShoppingCart },
   { path: '/reports', label: 'Reports', icon: BarChart3 },
 ];
@@ -16,7 +15,7 @@ export default function Navigation() {
     <nav className="no-print fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-50 bg-card border-t border-border shadow-card">
       <div className="flex items-stretch h-16">
         {tabs.map(({ path, label, icon: Icon }) => {
-          const isActive = currentPath === path || (path === '/menu' && currentPath === '/');
+          const isActive = currentPath === path || (path === '/order' && currentPath === '/');
           return (
             <Link
               key={path}

@@ -1,15 +1,17 @@
-import { Outlet, useRouterState } from '@tanstack/react-router';
+import { Outlet, useRouterState, Link } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { LogIn, LogOut, ShieldCheck, Eye, Loader2 } from 'lucide-react';
+import { LogIn, LogOut, ShieldCheck, Eye, Loader2, UtensilsCrossed } from 'lucide-react';
 import Navigation from './Navigation';
 import { useInternetIdentity } from '../../hooks/useInternetIdentity';
 import { useAdminRole } from '../../hooks/useAdminRole';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 export default function AppLayout() {
   const routerState = useRouterState();
   const isBillPage = routerState.location.pathname.startsWith('/bill');
+  const currentPath = routerState.location.pathname;
 
   const { login, clear, loginStatus, identity } = useInternetIdentity();
   const { isAdmin, isLoading: roleLoading } = useAdminRole();
@@ -52,8 +54,24 @@ export default function AppLayout() {
             <p className="text-xs text-muted-foreground">Billing &amp; Menu Manager</p>
           </div>
 
-          {/* Role badge + auth button */}
+          {/* Admin Menu link + Role badge + auth button */}
           <div className="flex items-center gap-2 shrink-0">
+            {/* Admin-only Menu Management link */}
+            {isAuthenticated && !roleLoading && isAdmin && (
+              <Link
+                to="/menu"
+                className={cn(
+                  'flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-md transition-colors',
+                  currentPath === '/menu'
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                )}
+              >
+                <UtensilsCrossed size={13} />
+                <span>Menu</span>
+              </Link>
+            )}
+
             {isAuthenticated && !roleLoading && (
               <Badge
                 variant={isAdmin ? 'default' : 'secondary'}

@@ -10,12 +10,12 @@ const rootRoute = createRootRoute({
   component: AppLayout,
 });
 
-// Index redirect to /menu
+// Index redirect to /order
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   beforeLoad: () => {
-    throw redirect({ to: '/menu' });
+    throw redirect({ to: '/order' });
   },
 });
 

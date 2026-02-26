@@ -1,23 +1,52 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Remove 'Non-Alcoholic Beverages' label from Tea and Coffee categories",
+  "title": "Remove Menu page from navigation and make Order the default home page",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Remove the 'Non-Alcoholic Beverages' suffix from Tea and Coffee category display names throughout the frontend UI",
+      "summary": "Change the default route so that navigating to '/' redirects to '/order' instead of '/menu'",
       "acceptanceCriteria": [
-        "The Tea category no longer shows 'Non-Alcoholic Beverages' anywhere in the UI.",
-        "The Coffee category no longer shows 'Non-Alcoholic Beverages' anywhere in the UI.",
-        "Both categories still appear and function correctly in the Order tab category grid.",
-        "Both categories still appear correctly in the Menu management page.",
-        "No other categories are affected by this change."
+        "Opening the app at the root URL '/' takes the user directly to the Order page.",
+        "No redirect to '/menu' occurs on initial load."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/lib/utils.ts",
+          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Update the getCategoryDisplayName function to return 'Tea' instead of 'Tea (Non-Alcoholic Beverages)' and 'Coffee' instead of 'Coffee (Non-Alcoholic Beverages)'. Ensure the mapping logic correctly strips or omits the '(Non-Alcoholic Beverages)' suffix for these two categories while preserving display names for all other categories."
+          "description": "Update the root index route to redirect to '/order' instead of '/menu'. Modify the IndexRoute configuration to use navigate: { to: '/order' } so that the default landing page is the Order page."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Remove the 'Menu' tab/link from the bottom navigation bar so only 'Order' and 'Reports' tabs are visible",
+      "acceptanceCriteria": [
+        "The bottom navigation bar no longer shows a 'Menu' tab.",
+        "Only 'Order' and 'Reports' tabs are present in the navigation.",
+        "The active tab highlighting still works correctly for the remaining tabs."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/layout/Navigation.tsx",
+          "operation": "modify",
+          "description": "Remove the Menu navigation link from the tab bar. Keep only the Order and Reports links. Ensure active route highlighting continues to work correctly for the two remaining tabs."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Keep the Menu Management page accessible to admin users via a route but remove it from main navigation",
+      "acceptanceCriteria": [
+        "The '/menu' route still renders the MenuManagement page for admin users.",
+        "Non-admin users cannot reach the menu management page through the navigation UI.",
+        "Admin users have at least one way to navigate to Menu Management (e.g., a link in the header when isAdmin is true)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/layout/AppLayout.tsx",
+          "operation": "modify",
+          "description": "Add an admin-only Menu Management link in the app header that appears when the user has admin privileges. Use the useAdminRole hook to check if the current user is an admin, and conditionally render a link to '/menu' in the header navigation area. This provides admin users access to Menu Management without exposing it in the main bottom navigation."
         }
       ]
     }

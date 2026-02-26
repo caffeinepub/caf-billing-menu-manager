@@ -1,22 +1,46 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "New project",
+  "summary": "Food ordering app where the Order page is the first/home page (menu removed from first page).",
   "architectural_notes": [],
   "known_issues": [],
-  "isFixRequest": true,
-  "existing_features": [],
-  "new_feature_requests": [
+  "isFixRequest": false,
+  "existing_features": [
     {
-      "id": "AR-1",
-      "summary": "Remove the text 'Non-Alcoholic Beverages' from the display names of the Tea and Coffee categories throughout the app. These categories should appear simply as 'Tea' and 'Coffee' wherever category names are rendered (Order tab category grid, menu sections, item forms, etc.).",
+      "id": "feature-change-the-default-route-so-that-navigating-to-redirects-to-order-instead-of-menu",
+      "title": "Change the default route so that navigating to '/' redirects to '/order' instead of '/menu'.",
       "reqIds": [
         "REQ-1"
       ],
+      "version": 1
+    },
+    {
+      "id": "feature-remove-the-menu-tab-link-from-the-bottom-navigation-bar-navigation-tsx-so-only-order-and-reports-tabs-are-visible",
+      "title": "Remove the 'Menu' tab/link from the bottom navigation bar (Navigation.tsx) so only 'Order' and 'Reports' tabs are visible.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-keep-the-menu-management-page-menu-accessible-to-admin-users-via-a-route-but-do-not-expose-it-in-the-main-navigation-admin-users-may-access-it-through-the-app-header-or-another-admin-only-entry-point-if-one-exists",
+      "title": "Keep the Menu Management page ('/menu') accessible to admin users via a route, but do not expose it in the main navigation. Admin users may access it through the app header or another admin-only entry point if one exists.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Remove menu from the first page and make Order the first/home page",
+      "reqIds": [],
       "status": "pending"
     }
   ],
-  "projectName": "Remove 'Non-Alcoholic Beverages' label from Tea and Coffee categories",
+  "gameProjectType": "none",
+  "projectName": "Café Billing Manager",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

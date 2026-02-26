@@ -50,16 +50,16 @@ export function endOfDay(date: Date): Date {
 // Fixed category display order for the café menu
 // These match the actual backend category names used in migration.mo
 export const MENU_CATEGORY_ORDER = [
-  'Tea (Non-Alcoholic Beverages)',
-  'Coffee (Non-Alcoholic Beverages)',
-  'Sandwich',
-  'Toast',
-  'Light Snacks',
-  'Momo',
-  'Burger',
-  'Starter',
-  'Refresher',
-  'Combo',
+  'TEA',
+  'COFFEE',
+  'SANDWICH',
+  'TOAST',
+  'LIGHT SNACKS',
+  'MOMOS',
+  'BURGERS',
+  'STARTERS',
+  'REFRESHERS',
+  'COMBO',
 ];
 
 /**
@@ -82,6 +82,17 @@ export function sortMenuCategories(categories: string[]): string[] {
  */
 export function getCategoryDisplayName(category: string): string {
   const displayNames: Record<string, string> = {
+    'TEA': 'Tea',
+    'COFFEE': 'Coffee',
+    'SANDWICH': 'Sandwich',
+    'TOAST': 'Toast',
+    'LIGHT SNACKS': 'Light Snacks',
+    'MOMOS': 'Momos',
+    'BURGERS': 'Burgers',
+    'STARTERS': 'Starters',
+    'REFRESHERS': 'Refreshers',
+    'COMBO': 'Combo',
+    // Legacy fallbacks
     'Tea (Non-Alcoholic Beverages)': 'Tea',
     'Coffee (Non-Alcoholic Beverages)': 'Coffee',
     'Momo': 'Momos',

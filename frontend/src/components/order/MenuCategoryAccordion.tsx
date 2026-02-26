@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import MenuItemCard from './MenuItemCard';
 import type { MenuItem } from '../../backend';
+import { getCategoryDisplayName } from '../../lib/utils';
 
 interface MenuCategoryAccordionProps {
   category: string;
@@ -30,6 +31,7 @@ export default function MenuCategoryAccordion({
 
   // Guard against undefined/null menuItems array
   const safeItems = Array.isArray(menuItems) ? menuItems : [];
+  const displayName = getCategoryDisplayName(category);
 
   return (
     <div className="rounded-xl border border-border overflow-hidden">
@@ -41,7 +43,7 @@ export default function MenuCategoryAccordion({
       >
         <div className="flex items-center gap-2">
           <span className="font-display font-semibold text-sm uppercase tracking-wide text-foreground">
-            {category}
+            {displayName}
           </span>
           <span className="text-xs text-muted-foreground font-normal">
             ({safeItems.length} item{safeItems.length !== 1 ? 's' : ''})

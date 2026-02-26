@@ -8,7 +8,6 @@ import List "mo:core/List";
 import Runtime "mo:core/Runtime";
 import Principal "mo:core/Principal";
 
-
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 
@@ -91,7 +90,7 @@ actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
-  var menuItems = Map.empty<Nat, MenuItem>();
+  let menuItems = Map.empty<Nat, MenuItem>();
   var orders = List.empty<Order>();
   var finalizedOrders = List.empty<FinalizedOrder>();
   let userProfiles = Map.empty<Principal, UserProfile>();

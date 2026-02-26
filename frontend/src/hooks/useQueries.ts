@@ -6,30 +6,30 @@ import { dateToNanoseconds, startOfDay, endOfDay } from '../lib/utils';
 // ─── Category ordering ────────────────────────────────────────────────────────
 // These match the actual backend category names used in migration.mo
 export const CATEGORY_ORDER = [
-  'Tea (Non-Alcoholic Beverages)',
-  'Coffee (Non-Alcoholic Beverages)',
-  'Sandwich',
-  'Toast',
-  'Light Snacks',
-  'Momo',
-  'Burger',
-  'Starter',
-  'Refresher',
-  'Combo',
+  'TEA',
+  'COFFEE',
+  'SANDWICH',
+  'TOAST',
+  'LIGHT SNACKS',
+  'MOMOS',
+  'BURGERS',
+  'STARTERS',
+  'REFRESHERS',
+  'COMBO',
 ];
 
 // Friendly display names for preset categories shown in the form
 export const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
-  'Tea (Non-Alcoholic Beverages)': 'Tea',
-  'Coffee (Non-Alcoholic Beverages)': 'Coffee',
-  'Sandwich': 'Sandwich',
-  'Toast': 'Toast',
-  'Light Snacks': 'Light Snacks',
-  'Momo': 'Momos',
-  'Burger': 'Burgers',
-  'Starter': 'Starters',
-  'Refresher': 'Refreshers',
-  'Combo': 'Combo',
+  'TEA': 'Tea',
+  'COFFEE': 'Coffee',
+  'SANDWICH': 'Sandwich',
+  'TOAST': 'Toast',
+  'LIGHT SNACKS': 'Light Snacks',
+  'MOMOS': 'Momos',
+  'BURGERS': 'Burgers',
+  'STARTERS': 'Starters',
+  'REFRESHERS': 'Refreshers',
+  'COMBO': 'Combo',
 };
 
 export function sortCategoriesByOrder(
