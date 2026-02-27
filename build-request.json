@@ -1,37 +1,59 @@
 {
   "kind": "build_request",
-  "title": "Fix Order tab navigation not responding",
-  "priority": "high",
+  "title": "Clear all persistent data for a fresh app start",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Fix the Order tab in the bottom navigation bar so that clicking it successfully navigates to the Order/order-taking page. Ensure the active route highlight works correctly for the /order route and that the tab responds to user interaction without errors.",
-      "target": "frontend",
+      "text": "Add a backend admin function `clearAllData` that resets all persistent state to empty — orders, menu items, categories, user profiles, and any other stored data — so the app starts fresh.",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "msg-4"
         ],
         "quotes": [
-          "how do i order the order tab is not working"
+          "clear all data for fresh start of the app"
         ]
       },
       "acceptanceCriteria": [
-        "Clicking the Order tab in the bottom navigation bar navigates to the /order page",
-        "The Order tab is visually highlighted as active when on the /order route",
-        "No console errors are thrown when clicking the Order tab",
-        "The OrderTaking page renders correctly after navigation",
-        "Navigation between Order, Menu, and Reports tabs all function without issues"
+        "Calling `clearAllData` removes all orders from the orders store.",
+        "Calling `clearAllData` removes all menu items and categories.",
+        "Calling `clearAllData` removes all user profiles.",
+        "Only an admin (or the canister controller) can invoke `clearAllData`.",
+        "Subsequent queries return empty collections after the reset."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Add a 'Clear All Data' button in the admin section of the frontend (e.g., in Menu Management or AppLayout admin controls) that calls the backend `clearAllData` function. Show a confirmation dialog before executing, and invalidate all React Query caches after a successful reset so the UI reflects the empty state immediately.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "clear all data for fresh start of the app"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A 'Clear All Data' button is visible only to authenticated admin users.",
+        "Clicking the button opens a confirmation dialog warning that all data will be permanently deleted.",
+        "Confirming the dialog calls the backend `clearAllData` function.",
+        "After a successful call, all React Query caches are invalidated (orders, menu items, categories, reports).",
+        "The UI immediately shows empty states (no orders, no menu items) after the reset.",
+        "A success toast or notification is shown after clearing is complete.",
+        "If the user cancels the dialog, no data is deleted."
       ]
     }
   ],
   "constraints": [
-    "Do not change the backend schema or Motoko actor",
-    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui"
+    "Only admin-authenticated users may trigger the data clear operation.",
+    "Do not modify any immutable frontend paths (useInternetIdentity, useActor, main.tsx, ui components)."
   ],
   "nonGoals": [
-    "Adding new order features or UI changes beyond fixing navigation",
-    "Changing the menu page or reports page",
-    "Modifying authentication flow"
+    "Selective deletion of specific records (e.g., only orders or only menu items).",
+    "Soft-delete or archival — this is a hard permanent reset.",
+    "Any changes to the visual theme or unrelated UI components."
   ],
   "imageRequirements": {
     "required": [],

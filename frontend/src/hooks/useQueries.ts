@@ -1,12 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useActor } from "./useActor";
-import type {
-  MenuItem,
-  UserProfile,
-  Category,
-} from "../backend";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useActor } from './useActor';
+import type { FinalizedOrder as BackendFinalizedOrder, MenuItem, Category, UserProfile } from '../backend';
 
-// Local type definitions — these types are not in the backend interface
+// Local types
 export interface OrderItem {
   menuItemId: bigint;
   name: string;
@@ -25,101 +21,67 @@ export interface FinalizedOrder {
 }
 
 export interface DailySales {
-  date: bigint;
-  totalSales: bigint;
+  date: string;
+  totalRevenue: bigint;
+  orderCount: number;
 }
 
 export interface PreviousDaySales {
-  totalRevenue: bigint;
-  totalBills: bigint;
+  revenue: bigint;
+  itemsSold: number;
+  orderCount: number;
 }
 
-// Category order matches exact backend category names (mixed case)
+// ─── Category order helpers ───────────────────────────────────────────────────
+
 export const CATEGORY_ORDER = [
-  "Tea",
-  "Coffee",
-  "Sandwich",
-  "Toast",
-  "Light Snacks",
-  "Momos",
-  "Burgers",
-  "Starters",
-  "Refreshers",
-  "Beverages",
-  "Combo",
+  'Tea', 'Coffee', 'Sandwich', 'Toast', 'Light Snacks',
+  'Momos', 'Burgers', 'Starters', 'Refreshers', 'Beverages', 'Combo',
+  // Legacy uppercase fallbacks
+  'TEA', 'COFFEE', 'SANDWICH', 'TOAST', 'LIGHT SNACKS',
+  'MOMOS', 'BURGERS', 'STARTERS', 'REFRESHERS', 'BEVERAGES', 'COMBO',
 ];
 
 export const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
-  Tea: "Tea",
-  Coffee: "Coffee",
-  Sandwich: "Sandwich",
-  Toast: "Toast",
-  "Light Snacks": "Light Snacks",
-  Momos: "Momos",
-  Burgers: "Burgers",
-  Starters: "Starters",
-  Refreshers: "Refreshers",
-  Beverages: "Beverages",
-  Combo: "Combo",
-  // Legacy uppercase fallbacks
-  TEA: "Tea",
-  COFFEE: "Coffee",
-  SANDWICH: "Sandwich",
-  TOAST: "Toast",
-  "LIGHT SNACKS": "Light Snacks",
-  MOMOS: "Momos",
-  BURGERS: "Burgers",
-  STARTERS: "Starters",
-  REFRESHERS: "Refreshers",
-  BEVERAGES: "Beverages",
-  COMBO: "Combo",
+  Tea: 'Tea', Coffee: 'Coffee', Sandwich: 'Sandwich', Toast: 'Toast',
+  'Light Snacks': 'Light Snacks', Momos: 'Momos', Burgers: 'Burgers',
+  Starters: 'Starters', Refreshers: 'Refreshers', Beverages: 'Beverages', Combo: 'Combo',
+  TEA: 'Tea', COFFEE: 'Coffee', SANDWICH: 'Sandwich', TOAST: 'Toast',
+  'LIGHT SNACKS': 'Light Snacks', MOMOS: 'Momos', BURGERS: 'Burgers',
+  STARTERS: 'Starters', REFRESHERS: 'Refreshers', BEVERAGES: 'Beverages', COMBO: 'Combo',
 };
 
 export function sortCategoriesByOrder(
   categories: Array<[string, MenuItem[]]>
 ): Array<[string, MenuItem[]]> {
-  const orderList = [
-    "Tea",
-    "Coffee",
-    "Sandwich",
-    "Toast",
-    "Light Snacks",
-    "Momos",
-    "Burgers",
-    "Starters",
-    "Refreshers",
-    "Beverages",
-    "Combo",
-    // Legacy uppercase
-    "TEA",
-    "COFFEE",
-    "SANDWICH",
-    "TOAST",
-    "LIGHT SNACKS",
-    "MOMOS",
-    "BURGERS",
-    "STARTERS",
-    "REFRESHERS",
-    "BEVERAGES",
-    "COMBO",
-  ];
   return [...categories].sort(([a], [b]) => {
-    const ai = orderList.indexOf(a);
-    const bi = orderList.indexOf(b);
-    const aIdx = ai === -1 ? orderList.length : ai;
-    const bIdx = bi === -1 ? orderList.length : bi;
+    const ai = CATEGORY_ORDER.indexOf(a);
+    const bi = CATEGORY_ORDER.indexOf(b);
+    const aIdx = ai === -1 ? CATEGORY_ORDER.length : ai;
+    const bIdx = bi === -1 ? CATEGORY_ORDER.length : bi;
     if (aIdx !== bIdx) return aIdx - bIdx;
     return a.localeCompare(b);
   });
 }
 
-// ── Category Queries ──────────────────────────────────────────────────────────
+// ─── Menu Queries ─────────────────────────────────────────────────────────────
+
+export function useGetAllMenuItems() {
+  const { actor, isFetching } = useActor();
+  return useQuery<MenuItem[]>({
+    queryKey: ['menuItems'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getAllMenuItems();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
 
 export function useGetCategories() {
   const { actor, isFetching } = useActor();
-
   return useQuery<Category[]>({
-    queryKey: ["categories"],
+    queryKey: ['categories'],
     queryFn: async () => {
       if (!actor) return [];
       return actor.getCategories();
@@ -128,48 +90,28 @@ export function useGetCategories() {
   });
 }
 
-export function useCreateCategory() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (_name: string) => {
-      // createCategory is not available in the current backend interface
-      throw new Error("Category management is not available in this version.");
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
-      queryClient.invalidateQueries({ queryKey: ["menuItemsByCategory"] });
-      queryClient.invalidateQueries({ queryKey: ["allMenuItems"] });
-    },
-  });
-}
-
-export function useDeleteCategory() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (_name: string) => {
-      // deleteCategory is not available in the current backend interface
-      throw new Error("Category management is not available in this version.");
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
-      queryClient.invalidateQueries({ queryKey: ["menuItemsByCategory"] });
-      queryClient.invalidateQueries({ queryKey: ["allMenuItems"] });
-    },
-  });
-}
-
-// ── Menu Queries ──────────────────────────────────────────────────────────────
-
-export function useMenuItemsByCategory() {
+export function useGetMenuItemsByCategory(category: string) {
   const { actor, isFetching } = useActor();
-
-  return useQuery<[string, MenuItem[]][]>({
-    queryKey: ["menuItemsByCategory"],
+  return useQuery<MenuItem[]>({
+    queryKey: ['menuItems', 'category', category],
     queryFn: async () => {
       if (!actor) return [];
-      // Fetch all items and group by category client-side
+      return actor.getMenuItemsByCategory(category);
+    },
+    enabled: !!actor && !isFetching && !!category,
+  });
+}
+
+/**
+ * Fetches all menu items and groups them by category.
+ * Used by MenuManagement page (no-arg version).
+ */
+export function useMenuItemsByCategory() {
+  const { actor, isFetching } = useActor();
+  return useQuery<Array<[string, MenuItem[]]>>({
+    queryKey: ['menuItemsByCategory'],
+    queryFn: async () => {
+      if (!actor) return [];
       const items = await actor.getAllMenuItems();
       const map = new Map<string, MenuItem[]>();
       for (const item of items) {
@@ -183,165 +125,311 @@ export function useMenuItemsByCategory() {
   });
 }
 
-// Alias for backward compatibility
-export const useGetMenuItemsByCategory = useMenuItemsByCategory;
+// ─── Category Mutations ───────────────────────────────────────────────────────
 
-export function useGetAllMenuItems() {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<MenuItem[]>({
-    queryKey: ["allMenuItems"],
-    queryFn: async () => {
-      if (!actor) return [];
-      return actor.getAllMenuItems();
+export function useCreateCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (_name: string) => {
+      throw new Error('createCategory is not available in the current backend interface');
     },
-    enabled: !!actor && !isFetching,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['menuItemsByCategory'] });
+    },
   });
 }
 
-export function useAddMenuItem() {
+export function useDeleteCategory() {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: async (_params: {
-      name: string;
-      price: bigint;
-      category: string;
-    }) => {
-      // addMenuItem is not available in the current backend interface
-      throw new Error("Menu item management is not available in this version.");
+    mutationFn: async (_name: string) => {
+      throw new Error('deleteCategory is not available in the current backend interface');
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["menuItemsByCategory"] });
-      queryClient.invalidateQueries({ queryKey: ["allMenuItems"] });
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['menuItemsByCategory'] });
+    },
+  });
+}
+
+// ─── Menu Item Mutations ──────────────────────────────────────────────────────
+
+export function useAddMenuItem() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (_item: { name: string; price: bigint; category: string }) => {
+      throw new Error('addMenuItem is not available in the current backend interface');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['menuItems'] });
+      queryClient.invalidateQueries({ queryKey: ['menuItemsByCategory'] });
     },
   });
 }
 
 export function useEditMenuItem() {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: async (_params: {
-      id: bigint;
-      name: string;
-      price: bigint;
-      category: string;
-    }) => {
-      // editMenuItem is not available in the current backend interface
-      throw new Error("Menu item management is not available in this version.");
+    mutationFn: async (_item: { id: bigint; name: string; price: bigint; category: string }) => {
+      throw new Error('editMenuItem is not available in the current backend interface');
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["menuItemsByCategory"] });
-      queryClient.invalidateQueries({ queryKey: ["allMenuItems"] });
+      queryClient.invalidateQueries({ queryKey: ['menuItems'] });
+      queryClient.invalidateQueries({ queryKey: ['menuItemsByCategory'] });
     },
   });
 }
 
 export function useDeleteMenuItem() {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async (_id: bigint) => {
-      // deleteMenuItem is not available in the current backend interface
-      throw new Error("Menu item management is not available in this version.");
+      throw new Error('deleteMenuItem is not available in the current backend interface');
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["menuItemsByCategory"] });
-      queryClient.invalidateQueries({ queryKey: ["allMenuItems"] });
+      queryClient.invalidateQueries({ queryKey: ['menuItems'] });
+      queryClient.invalidateQueries({ queryKey: ['menuItemsByCategory'] });
     },
   });
 }
 
-// ── Order Mutations ───────────────────────────────────────────────────────────
+// ─── Finalized Orders ─────────────────────────────────────────────────────────
 
+export function useGetFinalizedOrders() {
+  const { actor, isFetching } = useActor();
+  return useQuery<FinalizedOrder[]>({
+    queryKey: ['finalizedOrders'],
+    queryFn: async () => {
+      if (!actor) return [];
+      const orders = await actor.getFinalizedOrders();
+      return orders.map((o): FinalizedOrder => ({
+        id: o.id,
+        items: o.items.map(item => ({
+          menuItemId: item.menuItemId,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        subtotal: o.subtotal,
+        discount: o.discount,
+        total: o.total,
+        timestamp: o.timestamp,
+        finalized: o.finalized,
+      }));
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
+
+export function useGetAllOrderDetails() {
+  return useGetFinalizedOrders();
+}
+
+export function useSaveFinalizedOrder() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (order: FinalizedOrder) => {
+      if (!actor) throw new Error('Actor not available');
+      const backendOrder: BackendFinalizedOrder = {
+        id: order.id,
+        items: order.items.map(item => ({
+          menuItemId: item.menuItemId,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        subtotal: order.subtotal,
+        discount: order.discount,
+        total: order.total,
+        timestamp: order.timestamp,
+        finalized: order.finalized,
+      };
+      await actor.saveFinalizedOrder(backendOrder);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['finalizedOrders'] });
+    },
+  });
+}
+
+// Alias for backward compat
 export function useFinalizeOrder() {
-  return useMutation<FinalizedOrder, Error, { items: OrderItem[]; discount: bigint }>({
-    mutationFn: async (_params) => {
-      // finalizeOrder is not available in the current backend interface
-      throw new Error("Order finalization is not available in this version.");
+  return useSaveFinalizedOrder();
+}
+
+// ─── Clear All Data ───────────────────────────────────────────────────────────
+
+export function useClearAllData() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      await actor.clearAllData();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['finalizedOrders'] });
+      queryClient.invalidateQueries({ queryKey: ['menuItems'] });
+      queryClient.invalidateQueries({ queryKey: ['menuItemsByCategory'] });
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
     },
   });
 }
 
-// ── Sales Report Queries (stubbed — backend reporting endpoints not available) ──
+// ─── Sales Report Queries (computed client-side from finalizedOrders) ─────────
+
+function nanosToDateString(ns: bigint): string {
+  const ms = Number(ns / BigInt(1_000_000));
+  return new Date(ms).toISOString().split('T')[0];
+}
+
+function getTodayDateString(): string {
+  return new Date().toISOString().split('T')[0];
+}
+
+function getYesterdayDateString(): string {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return d.toISOString().split('T')[0];
+}
 
 export function useDailySalesSummary() {
-  return useQuery<{ total: bigint; itemCount: bigint; discount: bigint }>({
-    queryKey: ["dailySalesSummary"],
-    queryFn: async () => ({ total: 0n, itemCount: 0n, discount: 0n }),
-    staleTime: Infinity,
-  });
-}
+  const { data: orders = [], isLoading, error } = useGetFinalizedOrders();
 
-// Alias
-export const useGetDailySalesSummary = useDailySalesSummary;
+  const today = getTodayDateString();
+  const todayOrders = orders.filter(o => nanosToDateString(o.timestamp) === today);
 
-export function useItemWiseSales() {
-  return useQuery<[string, bigint, bigint][]>({
-    queryKey: ["itemWiseSales"],
-    queryFn: async () => [],
-    staleTime: Infinity,
-  });
-}
+  const totalRevenue = todayOrders.reduce((sum, o) => sum + o.total, BigInt(0));
+  const totalItems = todayOrders.reduce(
+    (sum, o) => sum + o.items.reduce((s, i) => s + Number(i.quantity), 0),
+    0
+  );
 
-// Alias
-export const useGetItemWiseSales = useItemWiseSales;
-
-export function useGetDateWiseSalesHistory(_startDate: bigint, _endDate: bigint) {
-  return useQuery<FinalizedOrder[]>({
-    queryKey: ["dateWiseSalesHistory", _startDate.toString(), _endDate.toString()],
-    queryFn: async () => [],
-    staleTime: Infinity,
-  });
-}
-
-export function useGetDayWiseTotalSales(_startDate?: bigint, _endDate?: bigint) {
-  return useQuery<DailySales[]>({
-    queryKey: ["dayWiseTotalSales", _startDate?.toString(), _endDate?.toString()],
-    queryFn: async () => [],
-    staleTime: Infinity,
-  });
-}
-
-export function useGetMonthlyTotalSales() {
-  return useQuery<[bigint, bigint][]>({
-    queryKey: ["monthlyTotalSales"],
-    queryFn: async () => [],
-    staleTime: Infinity,
-  });
+  return {
+    data: { totalRevenue, totalItems, orderCount: todayOrders.length },
+    isLoading,
+    error,
+  };
 }
 
 export function usePreviousDaySales() {
-  return useQuery<PreviousDaySales | null>({
-    queryKey: ["previousDaySales"],
-    queryFn: async () => null,
-    staleTime: Infinity,
-  });
+  const { data: orders = [], isLoading, error } = useGetFinalizedOrders();
+
+  const yesterday = getYesterdayDateString();
+  const yesterdayOrders = orders.filter(o => nanosToDateString(o.timestamp) === yesterday);
+
+  const revenue = yesterdayOrders.reduce((sum, o) => sum + o.total, BigInt(0));
+  const itemsSold = yesterdayOrders.reduce(
+    (sum, o) => sum + o.items.reduce((s, i) => s + Number(i.quantity), 0),
+    0
+  );
+
+  return {
+    data: { revenue, itemsSold, orderCount: yesterdayOrders.length } as PreviousDaySales,
+    isLoading,
+    error,
+  };
 }
 
-// Alias
-export const useGetPreviousDaySales = usePreviousDaySales;
-
-// ── All Finalized Orders (stubbed — getFinalizedOrders not in backend) ─────────
-
-export function useGetAllOrderDetails() {
-  return useQuery<FinalizedOrder[]>({
-    queryKey: ["allOrderDetails"],
-    queryFn: async () => [],
-    staleTime: Infinity,
-  });
+export interface ItemSales {
+  name: string;
+  quantity: number;
+  revenue: bigint;
 }
 
-// ── User Profile ──────────────────────────────────────────────────────────────
+export function useItemWiseSales() {
+  const { data: orders = [], isLoading, error } = useGetFinalizedOrders();
+
+  const itemMap = new Map<string, ItemSales>();
+  for (const order of orders) {
+    for (const item of order.items) {
+      const existing = itemMap.get(item.name);
+      if (existing) {
+        existing.quantity += Number(item.quantity);
+        existing.revenue += item.price * item.quantity;
+      } else {
+        itemMap.set(item.name, {
+          name: item.name,
+          quantity: Number(item.quantity),
+          revenue: item.price * item.quantity,
+        });
+      }
+    }
+  }
+
+  const items = Array.from(itemMap.values()).sort((a, b) => b.quantity - a.quantity);
+
+  return { data: items, isLoading, error };
+}
+
+export interface MonthlySales {
+  month: string; // "YYYY-MM"
+  label: string; // "Jan 2025"
+  revenue: bigint;
+  orderCount: number;
+}
+
+export function useGetMonthlyTotalSales() {
+  const { data: orders = [], isLoading, error } = useGetFinalizedOrders();
+
+  const monthMap = new Map<string, MonthlySales>();
+  for (const order of orders) {
+    const ms = Number(order.timestamp / BigInt(1_000_000));
+    const d = new Date(ms);
+    const month = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const label = d.toLocaleString('default', { month: 'short', year: 'numeric' });
+    const existing = monthMap.get(month);
+    if (existing) {
+      existing.revenue += order.total;
+      existing.orderCount += 1;
+    } else {
+      monthMap.set(month, { month, label, revenue: order.total, orderCount: 1 });
+    }
+  }
+
+  const months = Array.from(monthMap.values()).sort((a, b) => b.month.localeCompare(a.month));
+
+  return { data: months, isLoading, error };
+}
+
+export interface DateWiseSales {
+  date: string;
+  billCount: number;
+  totalRevenue: bigint;
+}
+
+export function useDateWiseSales() {
+  const { data: orders = [], isLoading, error } = useGetFinalizedOrders();
+
+  const dateMap = new Map<string, DateWiseSales>();
+  for (const order of orders) {
+    const date = nanosToDateString(order.timestamp);
+    const existing = dateMap.get(date);
+    if (existing) {
+      existing.billCount += 1;
+      existing.totalRevenue += order.total;
+    } else {
+      dateMap.set(date, { date, billCount: 1, totalRevenue: order.total });
+    }
+  }
+
+  const dates = Array.from(dateMap.values()).sort((a, b) => b.date.localeCompare(a.date));
+
+  return { data: dates, isLoading, error };
+}
+
+// ─── User Profile ─────────────────────────────────────────────────────────────
 
 export function useGetCallerUserProfile() {
   const { actor, isFetching: actorFetching } = useActor();
 
   const query = useQuery<UserProfile | null>({
-    queryKey: ["currentUserProfile"],
+    queryKey: ['currentUserProfile'],
     queryFn: async () => {
-      if (!actor) throw new Error("Actor not available");
+      if (!actor) throw new Error('Actor not available');
       return actor.getCallerUserProfile();
     },
     enabled: !!actor && !actorFetching,
@@ -358,14 +446,13 @@ export function useGetCallerUserProfile() {
 export function useSaveCallerUserProfile() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async (profile: UserProfile) => {
-      if (!actor) throw new Error("Actor not available");
-      return actor.saveCallerUserProfile(profile);
+      if (!actor) throw new Error('Actor not available');
+      await actor.saveCallerUserProfile(profile);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["currentUserProfile"] });
+      queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
     },
   });
 }

@@ -1,83 +1,59 @@
-import { formatCurrency } from "@/lib/utils";
-import type { DiscountType } from "@/hooks/useOrderState";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import React from 'react';
+import { formatCurrency } from '@/lib/utils';
 
 interface OrderTotalsPanelProps {
   subtotal: bigint;
-  discountAmount: bigint;
+  discount: bigint;
   total: bigint;
-  discountType: DiscountType;
-  discountValue: number;
-  onDiscountTypeChange: (type: DiscountType) => void;
-  onDiscountValueChange: (value: number) => void;
+  onDiscountChange: (amount: bigint) => void;
 }
 
 export default function OrderTotalsPanel({
   subtotal,
-  discountAmount,
+  discount,
   total,
-  discountType,
-  discountValue,
-  onDiscountTypeChange,
-  onDiscountValueChange,
+  onDiscountChange,
 }: OrderTotalsPanelProps) {
+  const discountDisplay = discount > BigInt(0) ? (Number(discount) / 100).toFixed(2) : '';
+
+  const handleDiscountInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    if (raw === '' || raw === '0') {
+      onDiscountChange(BigInt(0));
+      return;
+    }
+    const parsed = parseFloat(raw);
+    if (!isNaN(parsed) && parsed >= 0) {
+      onDiscountChange(BigInt(Math.round(parsed * 100)));
+    }
+  };
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-2 pt-2 border-t border-latte/30">
       {/* Subtotal */}
-      <div className="flex justify-between text-sm">
-        <span className="text-muted-foreground">Subtotal</span>
-        <span className="font-medium">{formatCurrency(subtotal)}</span>
+      <div className="flex justify-between text-sm text-espresso/70">
+        <span>Subtotal</span>
+        <span>{formatCurrency(subtotal)}</span>
       </div>
 
-      {/* Discount controls */}
-      <div className="space-y-2">
-        <div className="flex gap-2">
-          <Button
-            variant={discountType === "flat" ? "default" : "outline"}
-            size="sm"
-            className="flex-1 text-xs h-7"
-            onClick={() => onDiscountTypeChange("flat")}
-          >
-            Flat (₹)
-          </Button>
-          <Button
-            variant={discountType === "percentage" ? "default" : "outline"}
-            size="sm"
-            className="flex-1 text-xs h-7"
-            onClick={() => onDiscountTypeChange("percentage")}
-          >
-            Percent (%)
-          </Button>
-        </div>
-        <Input
+      {/* Discount */}
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-sm text-espresso/70 shrink-0">Discount (₹)</span>
+        <input
           type="number"
-          min={0}
-          max={discountType === "percentage" ? 100 : undefined}
-          value={discountValue === 0 ? "" : discountValue}
-          placeholder={discountType === "flat" ? "Discount amount (₹)" : "Discount %"}
-          onChange={(e) => {
-            const val = parseFloat(e.target.value);
-            onDiscountValueChange(isNaN(val) ? 0 : val);
-          }}
-          className="h-8 text-sm"
+          min="0"
+          step="0.01"
+          value={discountDisplay}
+          onChange={handleDiscountInput}
+          placeholder="0.00"
+          className="w-28 text-right text-sm border border-latte/40 rounded-md px-2 py-1 bg-cream focus:outline-none focus:ring-1 focus:ring-amber-warm text-espresso"
         />
       </div>
 
-      {/* Discount row */}
-      {discountAmount > BigInt(0) && (
-        <div className="flex justify-between text-sm text-green-600 dark:text-green-400">
-          <span>Discount</span>
-          <span>- {formatCurrency(discountAmount)}</span>
-        </div>
-      )}
-
       {/* Total */}
-      <div className="border-t border-border pt-2">
-        <div className="flex justify-between font-bold text-base">
-          <span>Total</span>
-          <span className="text-primary">{formatCurrency(total)}</span>
-        </div>
+      <div className="flex justify-between font-bold text-base text-espresso border-t border-latte/30 pt-2">
+        <span>Total</span>
+        <span className="text-amber-warm">{formatCurrency(total)}</span>
       </div>
     </div>
   );

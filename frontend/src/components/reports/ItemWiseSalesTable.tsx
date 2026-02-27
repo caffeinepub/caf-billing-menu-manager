@@ -1,65 +1,46 @@
-import { Card } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
-import { formatCurrency } from "@/lib/utils";
+import React from 'react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { formatCurrency } from '@/lib/utils';
+import { useItemWiseSales } from '@/hooks/useQueries';
+import { Skeleton } from '@/components/ui/skeleton';
 
-interface ItemWiseSalesTableProps {
-  data: Array<[string, bigint, bigint]>;
-  isLoading?: boolean;
-}
+export default function ItemWiseSalesTable() {
+  const { data: items = [], isLoading } = useItemWiseSales();
 
-export default function ItemWiseSalesTable({ data, isLoading }: ItemWiseSalesTableProps) {
   if (isLoading) {
-    return (
-      <Card className="p-4">
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-8 bg-muted rounded animate-pulse" />
-          ))}
-        </div>
-      </Card>
-    );
-  }
-
-  if (data.length === 0) {
-    return (
-      <Card className="p-6 text-center">
-        <p className="text-sm text-muted-foreground">No sales data available yet.</p>
-      </Card>
-    );
+    return <Skeleton className="h-48 rounded-xl" />;
   }
 
   return (
-    <Card className="overflow-hidden shadow-xs">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-secondary/50">
-            <TableHead className="text-xs font-semibold">Item</TableHead>
-            <TableHead className="text-xs font-semibold text-center w-16">Qty</TableHead>
-            <TableHead className="text-xs font-semibold text-right w-24">Revenue</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {data.map(([name, qty, revenue]) => (
-            <TableRow key={name}>
-              <TableCell className="text-sm py-2.5">{name}</TableCell>
-              <TableCell className="text-sm py-2.5 text-center font-medium">
-                {qty.toString()}
-              </TableCell>
-              <TableCell className="text-sm py-2.5 text-right font-semibold text-primary">
-                {formatCurrency(revenue)}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <Card className="border-latte/30 shadow-card">
+      <CardHeader className="pb-2 pt-4 px-4">
+        <h3 className="font-semibold text-espresso text-sm">Item-wise Sales (All Time)</h3>
+      </CardHeader>
+      <CardContent className="px-0 pb-2">
+        {items.length === 0 ? (
+          <p className="text-center text-espresso/50 text-sm py-8">No sales data yet</p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-xs pl-4">Item</TableHead>
+                <TableHead className="text-xs text-right">Qty</TableHead>
+                <TableHead className="text-xs text-right pr-4">Revenue</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {items.map(item => (
+                <TableRow key={item.name}>
+                  <TableCell className="text-xs pl-4 font-medium">{item.name}</TableCell>
+                  <TableCell className="text-xs text-right">{item.quantity}</TableCell>
+                  <TableCell className="text-xs text-right pr-4">{formatCurrency(item.revenue)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </CardContent>
     </Card>
   );
 }

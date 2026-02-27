@@ -21,14 +21,32 @@ export const MenuItem = IDL.Record({
 });
 export const UserProfile = IDL.Record({ 'name' : IDL.Text });
 export const Category = IDL.Record({ 'name' : IDL.Text });
+export const OrderItem = IDL.Record({
+  'name' : IDL.Text,
+  'quantity' : IDL.Nat,
+  'price' : IDL.Nat,
+  'menuItemId' : IDL.Nat,
+});
+export const FinalizedOrder = IDL.Record({
+  'id' : IDL.Nat,
+  'total' : IDL.Nat,
+  'finalized' : IDL.Bool,
+  'timestamp' : IDL.Int,
+  'discount' : IDL.Nat,
+  'items' : IDL.Vec(OrderItem),
+  'subtotal' : IDL.Nat,
+});
 
 export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+  'clearAllData' : IDL.Func([], [], []),
+  'clearAllFinalizedOrders' : IDL.Func([], [], []),
   'getAllMenuItems' : IDL.Func([], [IDL.Vec(MenuItem)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getCategories' : IDL.Func([], [IDL.Vec(Category)], ['query']),
+  'getFinalizedOrders' : IDL.Func([], [IDL.Vec(FinalizedOrder)], ['query']),
   'getMenuItemsByCategory' : IDL.Func(
       [IDL.Text],
       [IDL.Vec(MenuItem)],
@@ -41,6 +59,7 @@ export const idlService = IDL.Service({
     ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'saveFinalizedOrder' : IDL.Func([FinalizedOrder], [], []),
 });
 
 export const idlInitArgs = [];
@@ -59,14 +78,32 @@ export const idlFactory = ({ IDL }) => {
   });
   const UserProfile = IDL.Record({ 'name' : IDL.Text });
   const Category = IDL.Record({ 'name' : IDL.Text });
+  const OrderItem = IDL.Record({
+    'name' : IDL.Text,
+    'quantity' : IDL.Nat,
+    'price' : IDL.Nat,
+    'menuItemId' : IDL.Nat,
+  });
+  const FinalizedOrder = IDL.Record({
+    'id' : IDL.Nat,
+    'total' : IDL.Nat,
+    'finalized' : IDL.Bool,
+    'timestamp' : IDL.Int,
+    'discount' : IDL.Nat,
+    'items' : IDL.Vec(OrderItem),
+    'subtotal' : IDL.Nat,
+  });
   
   return IDL.Service({
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
+    'clearAllData' : IDL.Func([], [], []),
+    'clearAllFinalizedOrders' : IDL.Func([], [], []),
     'getAllMenuItems' : IDL.Func([], [IDL.Vec(MenuItem)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getCategories' : IDL.Func([], [IDL.Vec(Category)], ['query']),
+    'getFinalizedOrders' : IDL.Func([], [IDL.Vec(FinalizedOrder)], ['query']),
     'getMenuItemsByCategory' : IDL.Func(
         [IDL.Text],
         [IDL.Vec(MenuItem)],
@@ -79,6 +116,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'saveFinalizedOrder' : IDL.Func([FinalizedOrder], [], []),
   });
 };
 

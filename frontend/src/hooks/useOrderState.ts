@@ -1,6 +1,5 @@
-import { useState, useCallback } from "react";
-import type { MenuItem } from "../backend";
-import type { OrderItem } from "./useQueries";
+import { useState, useCallback } from 'react';
+import { OrderItem } from './useQueries';
 
 export interface ActiveOrderItem {
   menuItemId: bigint;
@@ -9,126 +8,123 @@ export interface ActiveOrderItem {
   price: bigint;
 }
 
-export type DiscountType = "flat" | "percentage";
-
-export interface UseOrderStateReturn {
+interface OrderState {
   items: ActiveOrderItem[];
-  discountType: DiscountType;
-  discountValue: number;
-  subtotal: bigint;
-  discountAmount: bigint;
-  total: bigint;
-  addItem: (item: MenuItem) => void;
-  updateQuantity: (menuItemId: bigint, quantity: number) => void;
-  removeItem: (menuItemId: bigint) => void;
-  setDiscountType: (type: DiscountType) => void;
-  setDiscountValue: (value: number) => void;
-  clearOrder: () => void;
-  getOrderItems: () => OrderItem[];
-  getDiscountBigInt: () => bigint;
+  discount: bigint;
 }
 
-function calcTotals(
-  items: ActiveOrderItem[],
-  discountType: DiscountType,
-  discountValue: number
-): { subtotal: bigint; discountAmount: bigint; total: bigint } {
-  const subtotal = items.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    BigInt(0)
-  );
-
-  let discountAmount: bigint;
-  if (discountType === "flat") {
-    const flat = BigInt(Math.max(0, Math.floor(discountValue)));
-    discountAmount = flat > subtotal ? subtotal : flat;
-  } else {
-    const pct = Math.min(100, Math.max(0, discountValue));
-    discountAmount = BigInt(Math.floor((Number(subtotal) * pct) / 100));
-  }
-
-  const total = subtotal - discountAmount;
-  return { subtotal, discountAmount, total };
+interface UseOrderStateReturn {
+  items: ActiveOrderItem[];
+  discount: bigint;
+  subtotal: bigint;
+  total: bigint;
+  addItem: (item: { id: bigint; name: string; price: bigint }) => void;
+  updateQuantity: (menuItemId: bigint, quantity: number) => void;
+  removeItem: (menuItemId: bigint) => void;
+  setDiscount: (amount: bigint) => void;
+  clearOrder: () => void;
+  toOrderItems: () => OrderItem[];
 }
 
 export function useOrderState(): UseOrderStateReturn {
-  const [items, setItems] = useState<ActiveOrderItem[]>([]);
-  const [discountType, setDiscountType] = useState<DiscountType>("flat");
-  const [discountValue, setDiscountValue] = useState<number>(0);
+  const [state, setState] = useState<OrderState>({
+    items: [],
+    discount: BigInt(0),
+  });
 
-  const { subtotal, discountAmount, total } = calcTotals(items, discountType, discountValue);
-
-  const addItem = useCallback((menuItem: MenuItem) => {
-    setItems((prev) => {
-      const existing = prev.find((i) => i.menuItemId === menuItem.id);
+  const addItem = useCallback((item: { id: bigint; name: string; price: bigint }) => {
+    setState(prev => {
+      const existing = prev.items.find(i => i.menuItemId === item.id);
       if (existing) {
-        return prev.map((i) =>
-          i.menuItemId === menuItem.id
-            ? { ...i, quantity: i.quantity + BigInt(1) }
-            : i
-        );
+        return {
+          ...prev,
+          items: prev.items.map(i =>
+            i.menuItemId === item.id
+              ? { ...i, quantity: i.quantity + BigInt(1) }
+              : i
+          ),
+        };
       }
-      return [
+      return {
         ...prev,
-        {
-          menuItemId: menuItem.id,
-          name: menuItem.name,
-          price: menuItem.price,
-          quantity: BigInt(1),
-        },
-      ];
+        items: [
+          ...prev.items,
+          {
+            menuItemId: item.id,
+            name: item.name,
+            quantity: BigInt(1),
+            price: item.price,
+          },
+        ],
+      };
     });
   }, []);
 
   const updateQuantity = useCallback((menuItemId: bigint, quantity: number) => {
-    if (quantity <= 0) {
-      setItems((prev) => prev.filter((i) => i.menuItemId !== menuItemId));
-    } else {
-      setItems((prev) =>
-        prev.map((i) =>
-          i.menuItemId === menuItemId ? { ...i, quantity: BigInt(quantity) } : i
-        )
-      );
-    }
+    setState(prev => {
+      if (quantity <= 0) {
+        return {
+          ...prev,
+          items: prev.items.filter(i => i.menuItemId !== menuItemId),
+        };
+      }
+      return {
+        ...prev,
+        items: prev.items.map(i =>
+          i.menuItemId === menuItemId
+            ? { ...i, quantity: BigInt(quantity) }
+            : i
+        ),
+      };
+    });
   }, []);
 
   const removeItem = useCallback((menuItemId: bigint) => {
-    setItems((prev) => prev.filter((i) => i.menuItemId !== menuItemId));
+    setState(prev => ({
+      ...prev,
+      items: prev.items.filter(i => i.menuItemId !== menuItemId),
+    }));
+  }, []);
+
+  const setDiscount = useCallback((amount: bigint) => {
+    setState(prev => ({
+      ...prev,
+      discount: amount < BigInt(0) ? BigInt(0) : amount,
+    }));
   }, []);
 
   const clearOrder = useCallback(() => {
-    setItems([]);
-    setDiscountType("flat");
-    setDiscountValue(0);
+    setState({ items: [], discount: BigInt(0) });
   }, []);
 
-  const getOrderItems = useCallback((): OrderItem[] => {
-    return items.map((i) => ({
-      menuItemId: i.menuItemId,
-      name: i.name,
-      quantity: i.quantity,
-      price: i.price,
-    }));
-  }, [items]);
+  const subtotal = state.items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    BigInt(0)
+  );
 
-  const getDiscountBigInt = useCallback((): bigint => {
-    return discountAmount;
-  }, [discountAmount]);
+  const total = subtotal - state.discount > BigInt(0)
+    ? subtotal - state.discount
+    : BigInt(0);
+
+  const toOrderItems = useCallback((): OrderItem[] => {
+    return state.items.map(item => ({
+      menuItemId: item.menuItemId,
+      name: item.name,
+      quantity: item.quantity,
+      price: item.price,
+    }));
+  }, [state.items]);
 
   return {
-    items,
-    discountType,
-    discountValue,
+    items: state.items,
+    discount: state.discount,
     subtotal,
-    discountAmount,
     total,
     addItem,
     updateQuantity,
     removeItem,
-    setDiscountType,
-    setDiscountValue,
+    setDiscount,
     clearOrder,
-    getOrderItems,
-    getDiscountBigInt,
+    toOrderItems,
   };
 }

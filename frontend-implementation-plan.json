@@ -1,33 +1,35 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix Order tab navigation not responding",
+  "title": "Clear all persistent data for a fresh app start",
   "requirements": [
     {
-      "id": "REQ-1",
-      "summary": "Fix the Order tab in the bottom navigation bar so that clicking it successfully navigates to the Order/order-taking page with proper route highlighting",
+      "id": "REQ-2",
+      "summary": "Add a 'Clear All Data' button in the admin section that calls the backend clearAllData function with confirmation dialog and cache invalidation",
       "acceptanceCriteria": [
-        "Clicking the Order tab in the bottom navigation bar navigates to the /order page",
-        "The Order tab is visually highlighted as active when on the /order route",
-        "No console errors are thrown when clicking the Order tab",
-        "The OrderTaking page renders correctly after navigation",
-        "Navigation between Order, Menu, and Reports tabs all function without issues"
+        "A 'Clear All Data' button is visible only to authenticated admin users.",
+        "Clicking the button opens a confirmation dialog warning that all data will be permanently deleted.",
+        "Confirming the dialog calls the backend clearAllData function.",
+        "After a successful call, all React Query caches are invalidated (orders, menu items, categories, reports).",
+        "The UI immediately shows empty states (no orders, no menu items) after the reset.",
+        "A success toast or notification is shown after clearing is complete.",
+        "If the user cancels the dialog, no data is deleted."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/layout/Navigation.tsx",
-          "operation": "modify",
-          "description": "Fix the Order tab navigation by ensuring the Link component's 'to' prop correctly points to '/order', verify the isActive logic properly highlights the Order tab when on the /order route, and ensure all navigation links use consistent TanStack Router Link components with proper activeProps for visual feedback. Verify that no event handlers are blocking navigation and that the component structure allows click events to propagate correctly."
+          "path": "frontend/src/components/menu/ClearAllDataDialog.tsx",
+          "operation": "create",
+          "description": "Create an AlertDialog component that renders a 'Clear All Data' button visible only to admins. When clicked, opens a confirmation dialog warning that all persistent data (orders, menu items, categories, user profiles) will be permanently deleted. On confirmation, calls the backend clearAllData() method, invalidates all React Query caches (orders, menu items, categories, reports), and shows a success toast. Includes loading state during the operation and error handling."
         },
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Verify the /order route is correctly registered in the TanStack Router configuration with the OrderTaking component, ensure the route path matches the navigation link target exactly ('/order'), and confirm the route is not conditionally rendered or blocked by any guards. Remove or adjust the root redirect from '/' to '/order' if it interferes with direct /order navigation, ensuring the Order route is accessible from all navigation contexts."
+          "description": "Add a useClearAllData mutation hook that calls actor.clearAllData(), invalidates all relevant query keys (finalizedOrders, menuItems, categories, currentUserProfile, and all sales report queries), and returns the mutation object for use in the ClearAllDataDialog component."
         },
         {
-          "path": "frontend/src/pages/OrderTaking.tsx",
+          "path": "frontend/src/pages/MenuManagement.tsx",
           "operation": "modify",
-          "description": "Review and ensure the OrderTaking page component exports correctly as the default export, verify it does not have any initialization errors that would prevent rendering, confirm all hooks and queries are properly configured to handle loading states without throwing errors, and ensure the component renders a stable UI even when menu data is still loading. Add error boundaries or fallback states if needed to prevent navigation failures."
+          "description": "Import and render the ClearAllDataDialog component at the top or bottom of the admin menu management page, positioned prominently as a destructive action control. Ensure it is only visible when the user is authenticated and has admin role."
         }
       ]
     }

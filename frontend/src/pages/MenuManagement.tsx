@@ -44,6 +44,7 @@ import {
 import { useAdminRole } from "../hooks/useAdminRole";
 import MenuCategorySection from "../components/menu/MenuCategorySection";
 import MenuItemForm from "../components/menu/MenuItemForm";
+import ClearAllDataDialog from "../components/menu/ClearAllDataDialog";
 
 export default function MenuManagement() {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
@@ -265,6 +266,23 @@ export default function MenuManagement() {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Danger Zone — admin only */}
+      {isAdmin && (
+        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-display font-semibold text-sm text-destructive">
+                Danger Zone
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Permanently delete all orders, menu items, categories, and user profiles.
+              </p>
+            </div>
+            <ClearAllDataDialog />
+          </div>
         </div>
       )}
 

@@ -1,88 +1,46 @@
-import { Card } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
-import { formatCurrency } from "@/lib/utils";
+import React from 'react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { formatCurrency } from '@/lib/utils';
+import { useGetMonthlyTotalSales } from '@/hooks/useQueries';
+import { Skeleton } from '@/components/ui/skeleton';
 
-interface MonthlySalesTableProps {
-  data: Array<[bigint, bigint]>;
-  isLoading?: boolean;
-}
+export default function MonthlySalesTable() {
+  const { data: months = [], isLoading } = useGetMonthlyTotalSales();
 
-// Backend uses 30-day months approximation: month = timestamp / (30 * dayInNanoseconds)
-const DAY_IN_NS = BigInt(24 * 60 * 60) * 1_000_000_000n;
-const MONTH_IN_NS = 30n * DAY_IN_NS;
-
-function formatMonthYear(monthIndex: bigint): string {
-  const nsTimestamp = monthIndex * MONTH_IN_NS;
-  if (nsTimestamp === 0n) {
-    return new Date().toLocaleDateString("en-IN", { month: "long", year: "numeric" });
-  }
-  const ms = Number(nsTimestamp) / 1_000_000;
-  return new Date(ms).toLocaleDateString("en-IN", { month: "long", year: "numeric" });
-}
-
-export default function MonthlySalesTable({ data, isLoading }: MonthlySalesTableProps) {
   if (isLoading) {
-    return (
-      <Card className="p-4">
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-9 w-full rounded" />
-          ))}
-        </div>
-      </Card>
-    );
+    return <Skeleton className="h-48 rounded-xl" />;
   }
-
-  if (!data || data.length === 0) {
-    return (
-      <Card className="p-6 text-center">
-        <p className="text-sm text-muted-foreground">No monthly sales data available.</p>
-      </Card>
-    );
-  }
-
-  const sorted = [...data].sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
-  const grandTotal = sorted.reduce((sum, [, total]) => sum + total, 0n);
 
   return (
-    <Card className="overflow-hidden shadow-xs">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-secondary/50">
-            <TableHead className="text-xs font-semibold">Month</TableHead>
-            <TableHead className="text-xs font-semibold text-right w-36">Total Sales</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {sorted.map(([monthIndex, totalSales]) => (
-            <TableRow key={monthIndex.toString()}>
-              <TableCell className="text-sm py-2.5 font-medium">
-                {formatMonthYear(monthIndex)}
-              </TableCell>
-              <TableCell className="text-sm py-2.5 text-right font-semibold text-primary">
-                {formatCurrency(totalSales)}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-        <TableFooter>
-          <TableRow className="bg-secondary/30 font-bold">
-            <TableCell className="text-sm py-2.5 font-bold">Grand Total</TableCell>
-            <TableCell className="text-sm py-2.5 text-right font-bold text-primary">
-              {formatCurrency(grandTotal)}
-            </TableCell>
-          </TableRow>
-        </TableFooter>
-      </Table>
+    <Card className="border-latte/30 shadow-card">
+      <CardHeader className="pb-2 pt-4 px-4">
+        <h3 className="font-semibold text-espresso text-sm">Monthly Sales</h3>
+      </CardHeader>
+      <CardContent className="px-0 pb-2">
+        {months.length === 0 ? (
+          <p className="text-center text-espresso/50 text-sm py-8">No monthly data yet</p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-xs pl-4">Month</TableHead>
+                <TableHead className="text-xs text-right">Orders</TableHead>
+                <TableHead className="text-xs text-right pr-4">Revenue</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {months.map(m => (
+                <TableRow key={m.month}>
+                  <TableCell className="text-xs pl-4 font-medium">{m.label}</TableCell>
+                  <TableCell className="text-xs text-right">{m.orderCount}</TableCell>
+                  <TableCell className="text-xs text-right pr-4">{formatCurrency(m.revenue)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </CardContent>
     </Card>
   );
 }

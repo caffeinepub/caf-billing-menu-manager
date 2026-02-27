@@ -1,16 +1,19 @@
 import Map "mo:core/Map";
+import List "mo:core/List";
 import Text "mo:core/Text";
 import Nat "mo:core/Nat";
-import List "mo:core/List";
 import Runtime "mo:core/Runtime";
 import Principal "mo:core/Principal";
 import Int "mo:core/Int";
 import Iter "mo:core/Iter";
+
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
+import Migration "migration";
 
+// Persisted State
 
-
+(with migration = Migration.run)
 actor {
   type MenuItem = {
     id : Nat;
@@ -47,6 +50,7 @@ actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
+  // Persistent state
   let menuItems = Map.empty<Nat, MenuItem>();
   let categories = Map.empty<Text, Category>();
   let userProfiles = Map.empty<Principal, UserProfile>();
@@ -176,4 +180,40 @@ actor {
       }
     );
   };
+
+  // Persist and retrieve finalized orders
+  public query ({ caller }) func getFinalizedOrders() : async [FinalizedOrder] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view finalized orders");
+    };
+    finalizedOrders.toArray();
+  };
+
+  public shared ({ caller }) func saveFinalizedOrder(order : FinalizedOrder) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can save finalized orders");
+    };
+    finalizedOrders.add(order);
+  };
+
+  public shared ({ caller }) func clearAllFinalizedOrders() : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can clear finalized orders");
+    };
+    finalizedOrders.clear();
+  };
+
+  // New function to clear all persistent state (admin only)
+  public shared ({ caller }) func clearAllData() : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can clear all data");
+    };
+    menuItems.clear();
+    categories.clear();
+    userProfiles.clear();
+    finalizedOrders.clear();
+    nextOrderId := 1;
+    nextFinalizedOrderId := 1;
+  };
 };
+

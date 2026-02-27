@@ -1,61 +1,46 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { TrendingUp, ShoppingBag } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { formatCurrency } from "@/lib/utils";
+import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { TrendingUp, ShoppingBag } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils';
+import { useDailySalesSummary } from '@/hooks/useQueries';
+import { Skeleton } from '@/components/ui/skeleton';
 
-interface DailySummaryCardProps {
-  total: bigint;
-  itemCount: bigint;
-  isLoading?: boolean;
-}
+export default function DailySummaryCard() {
+  const { data, isLoading } = useDailySalesSummary();
 
-export default function DailySummaryCard({ total, itemCount, isLoading }: DailySummaryCardProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-2 gap-3">
-        {[1, 2].map((i) => (
-          <Card key={i}>
-            <CardContent className="p-4">
-              <Skeleton className="h-8 w-8 rounded-lg mb-2" />
-              <Skeleton className="h-5 w-3/4 mb-1" />
-              <Skeleton className="h-3 w-2/3" />
-            </CardContent>
-          </Card>
-        ))}
+        <Skeleton className="h-24 rounded-xl" />
+        <Skeleton className="h-24 rounded-xl" />
       </div>
     );
   }
 
-  const stats = [
-    {
-      label: "Today's Revenue",
-      value: formatCurrency(total),
-      icon: TrendingUp,
-      color: "text-primary",
-      bg: "bg-primary/10",
-    },
-    {
-      label: "Items Sold",
-      value: itemCount.toString(),
-      icon: ShoppingBag,
-      color: "text-accent-foreground",
-      bg: "bg-accent/20",
-    },
-  ];
+  const revenue = data?.totalRevenue ?? BigInt(0);
+  const items = data?.totalItems ?? 0;
 
   return (
     <div className="grid grid-cols-2 gap-3">
-      {stats.map((stat) => (
-        <Card key={stat.label} className="shadow-xs">
-          <CardContent className="p-3">
-            <div className={`w-8 h-8 rounded-lg ${stat.bg} flex items-center justify-center mb-2`}>
-              <stat.icon size={16} className={stat.color} />
-            </div>
-            <p className="font-bold text-base text-foreground leading-tight">{stat.value}</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{stat.label}</p>
-          </CardContent>
-        </Card>
-      ))}
+      <Card className="bg-espresso text-cream border-0 shadow-card">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <TrendingUp className="w-4 h-4 text-amber-warm" />
+            <span className="text-xs text-cream/70">Today's Revenue</span>
+          </div>
+          <p className="text-xl font-bold font-display">{formatCurrency(revenue)}</p>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-amber-warm text-espresso border-0 shadow-card">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <ShoppingBag className="w-4 h-4 text-espresso/70" />
+            <span className="text-xs text-espresso/70">Items Sold</span>
+          </div>
+          <p className="text-xl font-bold font-display">{items}</p>
+        </CardContent>
+      </Card>
     </div>
   );
 }

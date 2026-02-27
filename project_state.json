@@ -1,25 +1,31 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Food ordering app with a full menu page featuring 11 categories. The Order tab is currently not working.",
+  "summary": "New project",
   "architectural_notes": [],
-  "known_issues": [
-    "Order tab is not responding/not working when clicked"
-  ],
-  "isFixRequest": true,
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-fix-the-order-tab-in-the-bottom-navigation-bar-so-that-clicking-it-successfully-navigates-to-the-order-order-taking-page-ensure-the-active-route-highlight-works-correctly-for-the-order-route-and-that-the-tab-responds-to-user-interaction-without-errors",
-      "title": "Fix the Order tab in the bottom navigation bar so that clicking it successfully navigates to the Order/order-taking page. Ensure the active route highlight works correctly for the /order route and that the tab responds to user interaction without errors.",
+      "id": "feature-add-a-clear-all-data-button-in-the-admin-section-of-the-frontend-e-g-in-menu-management-or-applayout-admin-controls-that-calls-the-backend-clearalldata-function-show-a-confirmation-dialog-before-executing-and-invalidate-all-react-query-caches-after-a-successful-reset-so-the-ui-reflects-the-empty-state-immediately",
+      "title": "Add a 'Clear All Data' button in the admin section of the frontend (e.g., in Menu Management or AppLayout admin controls) that calls the backend `clearAllData` function. Show a confirmation dialog before executing, and invalidate all React Query caches after a successful reset so the UI reflects the empty state immediately.",
       "reqIds": [
-        "REQ-1"
+        "REQ-2"
       ],
       "version": 1
     }
   ],
-  "new_feature_requests": [],
-  "gameProjectType": "none",
-  "projectName": "Fix Order tab navigation not responding",
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Add a backend admin function `clearAllData` that resets all persistent state to empty — orders, menu items, categories, user profiles, and any other stored data — so the app starts fresh.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "status": "pending"
+    }
+  ],
+  "projectName": "Clear all persistent data for a fresh app start",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

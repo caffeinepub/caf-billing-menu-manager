@@ -1,37 +1,53 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T17:51:46.036Z",
+  "generatedAt": "2026-02-27T05:26:39.606Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 1,
+    "total": 2,
     "implemented": 1,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Fix the Order tab in the bottom navigation bar so that clicking it successfully navigates to the Order/order-taking page. Ensure the active route highlight works correctly for the /order route and that the tab responds to user interaction without errors.",
+        "summary": "Add a backend admin function `clearAllData` that resets all persistent state to empty — orders, menu items, categories, user profiles, and any other stored data — so the app starts fresh.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Add a 'Clear All Data' button in the admin section of the frontend (e.g., in Menu Management or AppLayout admin controls) that calls the backend `clearAllData` function. Show a confirmation dialog before executing, and invalidate all React Query caches after a successful reset so the UI reflects the empty state immediately.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/layout/Navigation.tsx",
-          "frontend/src/App.tsx",
-          "frontend/src/pages/OrderTaking.tsx"
+          "frontend/src/components/menu/ClearAllDataDialog.tsx",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/MenuManagement.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/OrderTaking.tsx"
+          "frontend/src/components/menu/ClearAllDataDialog.tsx",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/MenuManagement.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/components/layout/AppLayout.tsx",
-    "frontend/src/pages/OrderTaking.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/menu/ClearAllDataDialog.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/MenuManagement.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

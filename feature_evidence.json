@@ -2,10 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-order-tab-in-the-bottom-navigation-bar-so-that-clicking-it-successfully-navigates-to-the-order-order-taking-page-ensure-the-active-route-highlight-works-correctly-for-the-order-route-and-that-the-tab-responds-to-user-interaction-without-errors",
-      "featureTitle": "Fix the Order tab in the bottom navigation bar so that clicking it successfully navigates to the Order/order-taking page. Ensure the active route highlight works correctly for the /order route and that the tab responds to user interaction without errors.",
+      "featureId": "feature-add-a-clear-all-data-button-in-the-admin-section-of-the-frontend-e-g-in-menu-management-or-applayout-admin-controls-that-calls-the-backend-clearalldata-function-show-a-confirmation-dialog-before-executing-and-invalidate-all-react-query-caches-after-a-successful-reset-so-the-ui-reflects-the-empty-state-immediately",
+      "featureTitle": "Add a 'Clear All Data' button in the admin section of the frontend (e.g., in Menu Management or AppLayout admin controls) that calls the backend `clearAllData` function. Show a confirmation dialog before executing, and invalidate all React Query caches after a successful reset so the UI reflects the empty state immediately.",
       "files": [
-        "frontend/src/pages/OrderTaking.tsx"
+        "frontend/src/components/menu/ClearAllDataDialog.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/MenuManagement.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -16,7 +18,7 @@
         "authorization@4.0.0"
       ],
       "testIds": [
-        "REQ-1"
+        "REQ-2"
       ],
       "confidence": "high"
     }

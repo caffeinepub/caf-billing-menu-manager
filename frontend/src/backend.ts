@@ -95,11 +95,26 @@ export interface MenuItem {
     category: string;
     price: bigint;
 }
-export interface UserProfile {
-    name: string;
+export interface FinalizedOrder {
+    id: bigint;
+    total: bigint;
+    finalized: boolean;
+    timestamp: bigint;
+    discount: bigint;
+    items: Array<OrderItem>;
+    subtotal: bigint;
 }
 export interface Category {
     name: string;
+}
+export interface UserProfile {
+    name: string;
+}
+export interface OrderItem {
+    name: string;
+    quantity: bigint;
+    price: bigint;
+    menuItemId: bigint;
 }
 export enum UserRole {
     admin = "admin",
@@ -109,14 +124,18 @@ export enum UserRole {
 export interface backendInterface {
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
+    clearAllData(): Promise<void>;
+    clearAllFinalizedOrders(): Promise<void>;
     getAllMenuItems(): Promise<Array<MenuItem>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getCategories(): Promise<Array<Category>>;
+    getFinalizedOrders(): Promise<Array<FinalizedOrder>>;
     getMenuItemsByCategory(category: string): Promise<Array<MenuItem>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
+    saveFinalizedOrder(order: FinalizedOrder): Promise<void>;
 }
 import type { UserProfile as _UserProfile, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
@@ -146,6 +165,34 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.assignCallerUserRole(arg0, to_candid_UserRole_n1(this._uploadFile, this._downloadFile, arg1));
+            return result;
+        }
+    }
+    async clearAllData(): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.clearAllData();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.clearAllData();
+            return result;
+        }
+    }
+    async clearAllFinalizedOrders(): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.clearAllFinalizedOrders();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.clearAllFinalizedOrders();
             return result;
         }
     }
@@ -205,6 +252,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getFinalizedOrders(): Promise<Array<FinalizedOrder>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getFinalizedOrders();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getFinalizedOrders();
+            return result;
+        }
+    }
     async getMenuItemsByCategory(arg0: string): Promise<Array<MenuItem>> {
         if (this.processError) {
             try {
@@ -258,6 +319,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.saveCallerUserProfile(arg0);
+            return result;
+        }
+    }
+    async saveFinalizedOrder(arg0: FinalizedOrder): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.saveFinalizedOrder(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.saveFinalizedOrder(arg0);
             return result;
         }
     }

@@ -11,11 +11,26 @@ import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
 export interface Category { 'name' : string }
+export interface FinalizedOrder {
+  'id' : bigint,
+  'total' : bigint,
+  'finalized' : boolean,
+  'timestamp' : bigint,
+  'discount' : bigint,
+  'items' : Array<OrderItem>,
+  'subtotal' : bigint,
+}
 export interface MenuItem {
   'id' : bigint,
   'name' : string,
   'category' : string,
   'price' : bigint,
+}
+export interface OrderItem {
+  'name' : string,
+  'quantity' : bigint,
+  'price' : bigint,
+  'menuItemId' : bigint,
 }
 export interface UserProfile { 'name' : string }
 export type UserRole = { 'admin' : null } |
@@ -24,14 +39,18 @@ export type UserRole = { 'admin' : null } |
 export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'clearAllData' : ActorMethod<[], undefined>,
+  'clearAllFinalizedOrders' : ActorMethod<[], undefined>,
   'getAllMenuItems' : ActorMethod<[], Array<MenuItem>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getCategories' : ActorMethod<[], Array<Category>>,
+  'getFinalizedOrders' : ActorMethod<[], Array<FinalizedOrder>>,
   'getMenuItemsByCategory' : ActorMethod<[string], Array<MenuItem>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'saveFinalizedOrder' : ActorMethod<[FinalizedOrder], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

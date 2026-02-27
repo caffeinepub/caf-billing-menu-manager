@@ -1,67 +1,60 @@
-import { useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
-import { ShoppingCart, Loader2, UtensilsCrossed, CheckCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useFinalizeOrder } from "@/hooks/useQueries";
-import { useOrderState } from "@/hooks/useOrderState";
-import OrderSummaryPanel from "@/components/order/OrderSummaryPanel";
-import OrderTotalsPanel from "@/components/order/OrderTotalsPanel";
-import DeleteOrderDialog from "@/components/order/DeleteOrderDialog";
-import CategoryGrid from "@/components/order/CategoryGrid";
-import CategoryItemsView from "@/components/order/CategoryItemsView";
-import { PUBLIC_MENU } from "@/data/publicMenu";
-import { formatCurrency } from "@/lib/utils";
-import type { MenuItem } from "@/backend";
+import { useState, useMemo } from 'react';
+import { useNavigate } from '@tanstack/react-router';
+import { useOrderState } from '@/hooks/useOrderState';
+import { useSaveFinalizedOrder } from '@/hooks/useQueries';
+import OrderSummaryPanel from '@/components/order/OrderSummaryPanel';
+import OrderTotalsPanel from '@/components/order/OrderTotalsPanel';
+import CategoryGrid from '@/components/order/CategoryGrid';
+import CategoryItemsView from '@/components/order/CategoryItemsView';
+import DeleteOrderDialog from '@/components/order/DeleteOrderDialog';
+import { PUBLIC_MENU } from '@/data/publicMenu';
+import type { MenuItem } from '@/backend';
 
-// Build MenuItem[] from static PUBLIC_MENU data (no auth required)
-// Assign stable numeric IDs based on position across all categories
+// Convert static menu data to MenuItem[] with bigint fields
+// prices in publicMenu.ts are in rupees; backend stores in paise (×100)
 let _idCounter = 1;
 const STATIC_MENU_ITEMS: MenuItem[] = PUBLIC_MENU.flatMap((cat) =>
   cat.items.map((item) => ({
     id: BigInt(_idCounter++),
     name: item.name,
-    // prices in publicMenu.ts are in rupees; backend stores in paise (×100)
     price: BigInt(item.price * 100),
     category: cat.name,
   }))
 );
 
-// Build the [category, MenuItem[]] pairs that CategoryGrid expects
+// Build [category, MenuItem[]] pairs for CategoryGrid
 const STATIC_CATEGORIES: Array<[string, MenuItem[]]> = PUBLIC_MENU.map((cat) => [
   cat.name,
   STATIC_MENU_ITEMS.filter((item) => item.category === cat.name),
 ]);
 
+let orderCounter = 1;
+
 export default function OrderTaking() {
   const navigate = useNavigate();
-  const finalizeOrderMutation = useFinalizeOrder();
-
   const {
     items,
-    discountType,
-    discountValue,
+    discount,
     subtotal,
-    discountAmount,
     total,
     addItem,
     updateQuantity,
     removeItem,
-    setDiscountType,
-    setDiscountValue,
+    setDiscount,
     clearOrder,
-    getOrderItems,
-    getDiscountBigInt,
+    toOrderItems,
   } = useOrderState();
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const saveFinalizedOrder = useSaveFinalizedOrder();
 
   // Items for the selected category
-  const categoryItems: MenuItem[] = selectedCategory
-    ? (STATIC_CATEGORIES.find(([cat]) => cat === selectedCategory)?.[1] ?? [])
-    : [];
+  const categoryItems: MenuItem[] = useMemo(() => {
+    if (!selectedCategory) return [];
+    return STATIC_CATEGORIES.find(([cat]) => cat === selectedCategory)?.[1] ?? [];
+  }, [selectedCategory]);
 
   // Quantity helper for MenuItemCard badges
   const getQuantityInOrder = (menuItemId: bigint): number => {
@@ -72,55 +65,46 @@ export default function OrderTaking() {
   const handleFinalize = async () => {
     if (items.length === 0) return;
 
-    const orderItems = getOrderItems();
-    const discount = getDiscountBigInt();
+    const orderId = BigInt(orderCounter++);
+    const timestampNs = BigInt(Date.now()) * BigInt(1_000_000);
 
-    // Store bill data locally before attempting finalize (which may be stubbed)
-    const billData = {
-      id: Date.now(),
-      items: items.map((item) => ({
-        menuItemId: Number(item.menuItemId),
-        name: item.name,
-        quantity: Number(item.quantity),
-        price: Number(item.price),
-      })),
-      subtotal: Number(subtotal),
-      discount: Number(discountAmount),
-      total: Number(total),
-      timestamp: Date.now() * 1_000_000,
+    const order = {
+      id: orderId,
+      items: toOrderItems(),
+      subtotal,
+      discount,
+      total,
+      timestamp: timestampNs,
+      finalized: true,
     };
 
-    try {
-      const result = await finalizeOrderMutation.mutateAsync({
-        items: orderItems,
-        discount,
-      });
+    // Store bill data in sessionStorage for the bill view
+    sessionStorage.setItem(
+      'billData',
+      JSON.stringify({
+        id: Number(orderId),
+        items: items.map((i) => ({
+          menuItemId: Number(i.menuItemId),
+          name: i.name,
+          quantity: Number(i.quantity),
+          price: Number(i.price),
+        })),
+        subtotal: Number(subtotal),
+        discount: Number(discount),
+        total: Number(total),
+        timestamp: Number(timestampNs),
+      })
+    );
 
-      if (result && result.id !== undefined) {
-        const serverBillData = {
-          id: Number(result.id),
-          items: result.items.map((item) => ({
-            menuItemId: Number(item.menuItemId),
-            name: item.name,
-            quantity: Number(item.quantity),
-            price: Number(item.price),
-          })),
-          subtotal: Number(result.subtotal),
-          discount: Number(result.discount),
-          total: Number(result.total),
-          timestamp: Number(result.timestamp),
-        };
-        sessionStorage.setItem("billData", JSON.stringify(serverBillData));
-      } else {
-        sessionStorage.setItem("billData", JSON.stringify(billData));
-      }
-    } catch {
-      // Finalize not available on backend — use local data for bill
-      sessionStorage.setItem("billData", JSON.stringify(billData));
+    try {
+      await saveFinalizedOrder.mutateAsync(order);
+    } catch (err) {
+      // Still navigate to bill even if backend save fails
+      console.error('Failed to save order to backend:', err);
     }
 
     clearOrder();
-    navigate({ to: "/bill" });
+    navigate({ to: '/bill' });
   };
 
   const handleClearOrder = () => {
@@ -143,21 +127,19 @@ export default function OrderTaking() {
               onAdd={addItem}
               onBack={() => {
                 setSelectedCategory(null);
-                setSearchQuery("");
+                setSearchQuery('');
               }}
               onSearchChange={setSearchQuery}
             />
           </div>
         ) : (
           <div className="flex-1 overflow-auto p-4">
-            <h2 className="font-display font-bold text-lg text-foreground mb-3">
-              Browse Menu
-            </h2>
+            <h2 className="font-display font-bold text-lg text-foreground mb-3">Browse Menu</h2>
             <CategoryGrid
               categories={STATIC_CATEGORIES}
               onSelectCategory={(cat) => {
                 setSelectedCategory(cat);
-                setSearchQuery("");
+                setSearchQuery('');
               }}
             />
           </div>
@@ -169,12 +151,11 @@ export default function OrderTaking() {
         {/* Order header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
           <div className="flex items-center gap-2">
-            <ShoppingCart className="h-4 w-4 text-primary" />
             <span className="font-semibold text-sm text-foreground">Current Order</span>
             {totalItemCount > 0 && (
-              <Badge variant="secondary" className="text-xs">
-                {totalItemCount} item{totalItemCount !== 1 ? "s" : ""}
-              </Badge>
+              <span className="text-xs bg-primary/10 text-primary rounded-full px-2 py-0.5 font-medium">
+                {totalItemCount} item{totalItemCount !== 1 ? 's' : ''}
+              </span>
             )}
           </div>
           {items.length > 0 && (
@@ -186,10 +167,9 @@ export default function OrderTaking() {
         </div>
 
         {/* Order items — scrollable */}
-        <ScrollArea className="flex-1 min-h-0 max-h-[40vh] lg:max-h-none">
+        <div className="flex-1 min-h-0 overflow-y-auto max-h-[40vh] lg:max-h-none">
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 px-4 text-center text-muted-foreground">
-              <UtensilsCrossed className="h-10 w-10 mb-3 opacity-30" />
               <p className="text-sm font-medium">No items yet</p>
               <p className="text-xs mt-1">Tap a menu item to add it to the order</p>
             </div>
@@ -209,38 +189,31 @@ export default function OrderTaking() {
               />
             </div>
           )}
-        </ScrollArea>
+        </div>
 
         {/* Totals + finalize — always visible at bottom */}
         <div className="px-4 pb-4 pt-3 border-t border-border shrink-0 space-y-3">
           <OrderTotalsPanel
             subtotal={subtotal}
-            discountAmount={discountAmount}
+            discount={discount}
             total={total}
-            discountType={discountType}
-            discountValue={discountValue}
-            onDiscountTypeChange={setDiscountType}
-            onDiscountValueChange={setDiscountValue}
+            onDiscountChange={setDiscount}
           />
 
-          <Button
-            className="w-full gap-2"
-            size="lg"
+          <button
             onClick={handleFinalize}
-            disabled={items.length === 0}
+            disabled={items.length === 0 || saveFinalizedOrder.isPending}
+            className="w-full bg-espresso text-cream font-semibold py-3 rounded-xl hover:bg-espresso/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
           >
-            {finalizeOrderMutation.isPending ? (
+            {saveFinalizedOrder.isPending ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Processing...
+                <span className="animate-spin rounded-full h-4 w-4 border-2 border-cream border-t-transparent" />
+                Saving...
               </>
             ) : (
-              <>
-                <CheckCircle className="h-4 w-4" />
-                Finalize · {formatCurrency(total)}
-              </>
+              `Finalize Order · ₹${(Number(total) / 100).toFixed(0)}`
             )}
-          </Button>
+          </button>
         </div>
       </div>
     </div>
