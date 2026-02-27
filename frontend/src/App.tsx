@@ -4,6 +4,8 @@ import MenuManagement from './pages/MenuManagement';
 import OrderTaking from './pages/OrderTaking';
 import BillView from './pages/BillView';
 import SalesReports from './pages/SalesReports';
+import OrderDetails from './pages/OrderDetails';
+import PublicMenu from './pages/PublicMenu';
 
 // Root route with layout
 const rootRoute = createRootRoute({
@@ -19,9 +21,17 @@ const indexRoute = createRoute({
   },
 });
 
+// Public menu page (accessible to all)
 const menuRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/menu',
+  component: PublicMenu,
+});
+
+// Admin menu management page
+const menuManagementRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/menu-management',
   component: MenuManagement,
 });
 
@@ -43,12 +53,20 @@ const reportsRoute = createRoute({
   component: SalesReports,
 });
 
+const orderDetailsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/order-details',
+  component: OrderDetails,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   menuRoute,
+  menuManagementRoute,
   orderRoute,
   billRoute,
   reportsRoute,
+  orderDetailsRoute,
 ]);
 
 const router = createRouter({ routeTree });

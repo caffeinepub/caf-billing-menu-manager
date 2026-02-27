@@ -1,11 +1,11 @@
 # Specification
 
 ## Summary
-**Goal:** Remove the Menu tab from the bottom navigation bar and make the Order page the default landing page of the Café Billing Manager app.
+**Goal:** Fix the Order tab in the bottom navigation bar so it correctly navigates to the order-taking page.
 
 **Planned changes:**
-- Change the default route `/` to redirect to `/order` instead of `/menu`
-- Remove the "Menu" tab from the bottom navigation bar, leaving only "Order" and "Reports" tabs
-- Keep the `/menu` route accessible for admin users, and add an admin-only link (e.g., in the app header) to reach Menu Management
+- Fix the Order tab click handler in the bottom navigation bar to navigate to the `/order` route
+- Ensure the active route highlight correctly reflects the `/order` route when on that page
+- Verify the OrderTaking page renders correctly after navigation
 
-**User-visible outcome:** When users open the app, they land directly on the Order page. The bottom navigation only shows "Order" and "Reports." Admin users can still access Menu Management via a link in the header.
+**User-visible outcome:** Users can click the Order tab in the bottom navigation bar and be taken to the order-taking page, with the tab visually highlighted as active.

@@ -13,29 +13,6 @@ export const UserRole = IDL.Variant({
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
-export const OrderItem = IDL.Record({
-  'name' : IDL.Text,
-  'quantity' : IDL.Nat,
-  'price' : IDL.Nat,
-  'menuItemId' : IDL.Nat,
-});
-export const FinalizedOrder = IDL.Record({
-  'id' : IDL.Nat,
-  'total' : IDL.Nat,
-  'finalized' : IDL.Bool,
-  'timestamp' : IDL.Int,
-  'discount' : IDL.Nat,
-  'items' : IDL.Vec(OrderItem),
-  'subtotal' : IDL.Nat,
-});
-export const Order = IDL.Record({
-  'id' : IDL.Nat,
-  'total' : IDL.Nat,
-  'timestamp' : IDL.Int,
-  'discount' : IDL.Nat,
-  'items' : IDL.Vec(OrderItem),
-  'subtotal' : IDL.Nat,
-});
 export const MenuItem = IDL.Record({
   'id' : IDL.Nat,
   'name' : IDL.Text,
@@ -43,73 +20,18 @@ export const MenuItem = IDL.Record({
   'price' : IDL.Nat,
 });
 export const UserProfile = IDL.Record({ 'name' : IDL.Text });
-export const DailySales = IDL.Record({
-  'date' : IDL.Int,
-  'totalSales' : IDL.Nat,
-});
-export const PreviousDaySales = IDL.Record({
-  'totalBills' : IDL.Nat,
-  'totalRevenue' : IDL.Nat,
-});
+export const Category = IDL.Record({ 'name' : IDL.Text });
 
 export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-  'addMenuItem' : IDL.Func([IDL.Text, IDL.Nat, IDL.Text], [IDL.Nat], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-  'clearActiveOrders' : IDL.Func([], [], []),
-  'clearAllState' : IDL.Func([], [], []),
-  'deleteMenuItem' : IDL.Func([IDL.Nat], [], []),
-  'deleteOrder' : IDL.Func([IDL.Nat], [], []),
-  'editMenuItem' : IDL.Func([IDL.Nat, IDL.Text, IDL.Nat, IDL.Text], [], []),
-  'finalizeOrder' : IDL.Func(
-      [IDL.Vec(OrderItem), IDL.Nat],
-      [FinalizedOrder],
-      [],
-    ),
-  'getActiveOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
   'getAllMenuItems' : IDL.Func([], [IDL.Vec(MenuItem)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-  'getDailySalesSummary' : IDL.Func(
-      [],
-      [
-        IDL.Record({
-          'total' : IDL.Nat,
-          'itemCount' : IDL.Nat,
-          'discount' : IDL.Nat,
-        }),
-      ],
-      ['query'],
-    ),
-  'getDateWiseSalesHistory' : IDL.Func(
-      [IDL.Int, IDL.Int],
-      [IDL.Vec(FinalizedOrder)],
-      ['query'],
-    ),
-  'getDayWiseTotalSales' : IDL.Func(
-      [IDL.Opt(IDL.Int), IDL.Opt(IDL.Int)],
-      [IDL.Vec(DailySales)],
-      ['query'],
-    ),
-  'getItemWiseSales' : IDL.Func(
-      [],
-      [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat, IDL.Nat))],
-      ['query'],
-    ),
+  'getCategories' : IDL.Func([], [IDL.Vec(Category)], ['query']),
   'getMenuItemsByCategory' : IDL.Func(
-      [],
-      [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Vec(MenuItem)))],
-      ['query'],
-    ),
-  'getMonthlyTotalSales' : IDL.Func(
-      [],
-      [IDL.Vec(IDL.Tuple(IDL.Int, IDL.Nat))],
-      ['query'],
-    ),
-  'getPreviousDaySales' : IDL.Func([], [IDL.Opt(PreviousDaySales)], ['query']),
-  'getTodaySales' : IDL.Func(
-      [IDL.Int, IDL.Int],
-      [IDL.Vec(FinalizedOrder)],
+      [IDL.Text],
+      [IDL.Vec(MenuItem)],
       ['query'],
     ),
   'getUserProfile' : IDL.Func(
@@ -129,29 +51,6 @@ export const idlFactory = ({ IDL }) => {
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
-  const OrderItem = IDL.Record({
-    'name' : IDL.Text,
-    'quantity' : IDL.Nat,
-    'price' : IDL.Nat,
-    'menuItemId' : IDL.Nat,
-  });
-  const FinalizedOrder = IDL.Record({
-    'id' : IDL.Nat,
-    'total' : IDL.Nat,
-    'finalized' : IDL.Bool,
-    'timestamp' : IDL.Int,
-    'discount' : IDL.Nat,
-    'items' : IDL.Vec(OrderItem),
-    'subtotal' : IDL.Nat,
-  });
-  const Order = IDL.Record({
-    'id' : IDL.Nat,
-    'total' : IDL.Nat,
-    'timestamp' : IDL.Int,
-    'discount' : IDL.Nat,
-    'items' : IDL.Vec(OrderItem),
-    'subtotal' : IDL.Nat,
-  });
   const MenuItem = IDL.Record({
     'id' : IDL.Nat,
     'name' : IDL.Text,
@@ -159,74 +58,18 @@ export const idlFactory = ({ IDL }) => {
     'price' : IDL.Nat,
   });
   const UserProfile = IDL.Record({ 'name' : IDL.Text });
-  const DailySales = IDL.Record({ 'date' : IDL.Int, 'totalSales' : IDL.Nat });
-  const PreviousDaySales = IDL.Record({
-    'totalBills' : IDL.Nat,
-    'totalRevenue' : IDL.Nat,
-  });
+  const Category = IDL.Record({ 'name' : IDL.Text });
   
   return IDL.Service({
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-    'addMenuItem' : IDL.Func([IDL.Text, IDL.Nat, IDL.Text], [IDL.Nat], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-    'clearActiveOrders' : IDL.Func([], [], []),
-    'clearAllState' : IDL.Func([], [], []),
-    'deleteMenuItem' : IDL.Func([IDL.Nat], [], []),
-    'deleteOrder' : IDL.Func([IDL.Nat], [], []),
-    'editMenuItem' : IDL.Func([IDL.Nat, IDL.Text, IDL.Nat, IDL.Text], [], []),
-    'finalizeOrder' : IDL.Func(
-        [IDL.Vec(OrderItem), IDL.Nat],
-        [FinalizedOrder],
-        [],
-      ),
-    'getActiveOrders' : IDL.Func([], [IDL.Vec(Order)], ['query']),
     'getAllMenuItems' : IDL.Func([], [IDL.Vec(MenuItem)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-    'getDailySalesSummary' : IDL.Func(
-        [],
-        [
-          IDL.Record({
-            'total' : IDL.Nat,
-            'itemCount' : IDL.Nat,
-            'discount' : IDL.Nat,
-          }),
-        ],
-        ['query'],
-      ),
-    'getDateWiseSalesHistory' : IDL.Func(
-        [IDL.Int, IDL.Int],
-        [IDL.Vec(FinalizedOrder)],
-        ['query'],
-      ),
-    'getDayWiseTotalSales' : IDL.Func(
-        [IDL.Opt(IDL.Int), IDL.Opt(IDL.Int)],
-        [IDL.Vec(DailySales)],
-        ['query'],
-      ),
-    'getItemWiseSales' : IDL.Func(
-        [],
-        [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat, IDL.Nat))],
-        ['query'],
-      ),
+    'getCategories' : IDL.Func([], [IDL.Vec(Category)], ['query']),
     'getMenuItemsByCategory' : IDL.Func(
-        [],
-        [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Vec(MenuItem)))],
-        ['query'],
-      ),
-    'getMonthlyTotalSales' : IDL.Func(
-        [],
-        [IDL.Vec(IDL.Tuple(IDL.Int, IDL.Nat))],
-        ['query'],
-      ),
-    'getPreviousDaySales' : IDL.Func(
-        [],
-        [IDL.Opt(PreviousDaySales)],
-        ['query'],
-      ),
-    'getTodaySales' : IDL.Func(
-        [IDL.Int, IDL.Int],
-        [IDL.Vec(FinalizedOrder)],
+        [IDL.Text],
+        [IDL.Vec(MenuItem)],
         ['query'],
       ),
     'getUserProfile' : IDL.Func(

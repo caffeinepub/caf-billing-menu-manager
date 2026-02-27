@@ -1,8 +1,14 @@
-import { Card } from '@/components/ui/card';
+import { Card } from "@/components/ui/card";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
-} from '@/components/ui/table';
-import { formatCurrencyBigInt } from '@/lib/utils';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatCurrency } from "@/lib/utils";
 
 interface ItemWiseSalesTableProps {
   data: Array<[string, bigint, bigint]>;
@@ -14,7 +20,7 @@ export default function ItemWiseSalesTable({ data, isLoading }: ItemWiseSalesTab
     return (
       <Card className="p-4">
         <div className="space-y-3">
-          {[1, 2, 3].map(i => (
+          {[1, 2, 3].map((i) => (
             <div key={i} className="h-8 bg-muted rounded animate-pulse" />
           ))}
         </div>
@@ -44,9 +50,11 @@ export default function ItemWiseSalesTable({ data, isLoading }: ItemWiseSalesTab
           {data.map(([name, qty, revenue]) => (
             <TableRow key={name}>
               <TableCell className="text-sm py-2.5">{name}</TableCell>
-              <TableCell className="text-sm py-2.5 text-center font-medium">{qty.toString()}</TableCell>
+              <TableCell className="text-sm py-2.5 text-center font-medium">
+                {qty.toString()}
+              </TableCell>
               <TableCell className="text-sm py-2.5 text-right font-semibold text-primary">
-                {formatCurrencyBigInt(revenue)}
+                {formatCurrency(revenue)}
               </TableCell>
             </TableRow>
           ))}

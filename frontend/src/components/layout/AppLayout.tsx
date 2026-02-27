@@ -1,6 +1,6 @@
 import { Outlet, useRouterState, Link } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { LogIn, LogOut, ShieldCheck, Eye, Loader2, UtensilsCrossed } from 'lucide-react';
+import { LogIn, LogOut, ShieldCheck, Eye, Loader2, Settings2 } from 'lucide-react';
 import Navigation from './Navigation';
 import { useInternetIdentity } from '../../hooks/useInternetIdentity';
 import { useAdminRole } from '../../hooks/useAdminRole';
@@ -54,21 +54,21 @@ export default function AppLayout() {
             <p className="text-xs text-muted-foreground">Billing &amp; Menu Manager</p>
           </div>
 
-          {/* Admin Menu link + Role badge + auth button */}
+          {/* Admin Menu Management link + Role badge + auth button */}
           <div className="flex items-center gap-2 shrink-0">
             {/* Admin-only Menu Management link */}
             {isAuthenticated && !roleLoading && isAdmin && (
               <Link
-                to="/menu"
+                to="/menu-management"
                 className={cn(
                   'flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-md transition-colors',
-                  currentPath === '/menu'
+                  currentPath === '/menu-management'
                     ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                 )}
               >
-                <UtensilsCrossed size={13} />
-                <span>Menu</span>
+                <Settings2 size={13} />
+                <span>Manage</span>
               </Link>
             )}
 
@@ -124,7 +124,7 @@ export default function AppLayout() {
       </header>
 
       {/* Main content */}
-      <main className={`flex-1 overflow-y-auto ${!isBillPage ? 'pb-20' : ''}`}>
+      <main className={`flex-1 ${!isBillPage ? 'pb-20' : ''} overflow-y-auto`}>
         <Outlet />
       </main>
 

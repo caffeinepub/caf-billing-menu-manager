@@ -1,7 +1,9 @@
-import { ArrowLeft } from 'lucide-react';
-import MenuItemCard from './MenuItemCard';
-import type { MenuItem } from '../../backend';
-import { getCategoryDisplayName } from '../../lib/utils';
+import { ArrowLeft, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import MenuItemCard from "./MenuItemCard";
+import type { MenuItem } from "../../backend";
+import type { ActiveOrderItem } from "../../hooks/useOrderState";
+import { getCategoryDisplayName } from "../../lib/utils";
 
 interface CategoryItemsViewProps {
   category: string;
@@ -10,6 +12,7 @@ interface CategoryItemsViewProps {
   getQuantityInOrder: (id: bigint) => number;
   onAdd: (item: MenuItem) => void;
   onBack: () => void;
+  onSearchChange?: (query: string) => void;
 }
 
 export default function CategoryItemsView({
@@ -19,6 +22,7 @@ export default function CategoryItemsView({
   getQuantityInOrder,
   onAdd,
   onBack,
+  onSearchChange,
 }: CategoryItemsViewProps) {
   const trimmed = searchQuery.trim().toLowerCase();
   const filteredItems = trimmed
@@ -28,9 +32,9 @@ export default function CategoryItemsView({
   const displayName = getCategoryDisplayName(category);
 
   return (
-    <div>
-      {/* Category header with back button */}
-      <div className="flex items-center gap-3 mb-4">
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="flex items-center gap-3 px-4 pt-4 pb-3">
         <button
           onClick={onBack}
           className="flex items-center justify-center w-9 h-9 rounded-full bg-muted hover:bg-muted/80 active:scale-95 transition-all shrink-0"
@@ -38,34 +42,49 @@ export default function CategoryItemsView({
         >
           <ArrowLeft size={18} className="text-foreground" />
         </button>
-        <div>
-          <h2 className="font-display font-bold text-base uppercase tracking-wide text-foreground leading-tight">
+        <div className="flex-1 min-w-0">
+          <h2 className="font-display font-bold text-base uppercase tracking-wide text-foreground leading-tight truncate">
             {displayName}
           </h2>
           <p className="text-xs text-muted-foreground">
-            {filteredItems.length} item{filteredItems.length !== 1 ? 's' : ''}
-            {trimmed ? ' found' : ''}
+            {filteredItems.length} item{filteredItems.length !== 1 ? "s" : ""}
+            {trimmed ? " found" : ""}
           </p>
         </div>
       </div>
 
-      {/* Items grid */}
-      {filteredItems.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground text-sm">
-          {trimmed ? 'No items match your search' : 'No items in this category'}
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 gap-2">
-          {filteredItems.map((item) => (
-            <MenuItemCard
-              key={item.id.toString()}
-              item={item}
-              quantityInOrder={getQuantityInOrder(item.id)}
-              onAdd={onAdd}
-            />
-          ))}
+      {/* Search */}
+      {onSearchChange && (
+        <div className="relative px-4 pb-3">
+          <Search className="absolute left-7 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder={`Search in ${displayName}...`}
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="pl-9 bg-card border-border"
+          />
         </div>
       )}
+
+      {/* Items grid */}
+      <div className="flex-1 overflow-auto px-4 pb-4">
+        {filteredItems.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground text-sm">
+            {trimmed ? "No items match your search" : "No items in this category"}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-2">
+            {filteredItems.map((item) => (
+              <MenuItemCard
+                key={item.id.toString()}
+                item={item}
+                quantityInOrder={getQuantityInOrder(item.id)}
+                onAdd={onAdd}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

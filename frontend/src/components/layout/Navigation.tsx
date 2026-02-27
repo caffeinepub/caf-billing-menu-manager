@@ -1,9 +1,10 @@
 import { Link, useRouterState } from '@tanstack/react-router';
-import { ShoppingCart, BarChart3 } from 'lucide-react';
+import { ShoppingCart, BarChart3, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const tabs = [
   { path: '/order', label: 'Order', icon: ShoppingCart },
+  { path: '/menu', label: 'Menu', icon: BookOpen },
   { path: '/reports', label: 'Reports', icon: BarChart3 },
 ];
 

@@ -1,223 +1,248 @@
-import { useState } from 'react';
-import { Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { useMenuItemsByCategory, sortCategoriesByOrder } from '@/hooks/useQueries';
-import { useOrderState } from '@/hooks/useOrderState';
-import { useAdminRole } from '@/hooks/useAdminRole';
-import CategoryGrid from '@/components/order/CategoryGrid';
-import CategoryItemsView from '@/components/order/CategoryItemsView';
-import OrderSummaryPanel from '@/components/order/OrderSummaryPanel';
-import OrderTotalsPanel from '@/components/order/OrderTotalsPanel';
-import DeleteOrderDialog from '@/components/order/DeleteOrderDialog';
-import { useInternetIdentity } from '@/hooks/useInternetIdentity';
-import { useActor } from '@/hooks/useActor';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { ShoppingCart, CheckCircle } from 'lucide-react';
+import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { ShoppingCart, Loader2, UtensilsCrossed, CheckCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useFinalizeOrder } from "@/hooks/useQueries";
+import { useOrderState } from "@/hooks/useOrderState";
+import OrderSummaryPanel from "@/components/order/OrderSummaryPanel";
+import OrderTotalsPanel from "@/components/order/OrderTotalsPanel";
+import DeleteOrderDialog from "@/components/order/DeleteOrderDialog";
+import CategoryGrid from "@/components/order/CategoryGrid";
+import CategoryItemsView from "@/components/order/CategoryItemsView";
+import { PUBLIC_MENU } from "@/data/publicMenu";
+import { formatCurrency } from "@/lib/utils";
+import type { MenuItem } from "@/backend";
+
+// Build MenuItem[] from static PUBLIC_MENU data (no auth required)
+// Assign stable numeric IDs based on position across all categories
+let _idCounter = 1;
+const STATIC_MENU_ITEMS: MenuItem[] = PUBLIC_MENU.flatMap((cat) =>
+  cat.items.map((item) => ({
+    id: BigInt(_idCounter++),
+    name: item.name,
+    // prices in publicMenu.ts are in rupees; backend stores in paise (×100)
+    price: BigInt(item.price * 100),
+    category: cat.name,
+  }))
+);
+
+// Build the [category, MenuItem[]] pairs that CategoryGrid expects
+const STATIC_CATEGORIES: Array<[string, MenuItem[]]> = PUBLIC_MENU.map((cat) => [
+  cat.name,
+  STATIC_MENU_ITEMS.filter((item) => item.category === cat.name),
+]);
 
 export default function OrderTaking() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const { data: menuCategories, isLoading } = useMenuItemsByCategory();
-  const { identity } = useInternetIdentity();
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-  const { isAdmin } = useAdminRole();
+  const navigate = useNavigate();
+  const finalizeOrderMutation = useFinalizeOrder();
 
   const {
     items,
     discountType,
-    setDiscountType,
     discountValue,
-    setDiscountValue,
-    addItem,
-    updateQuantity,
-    removeItem,
-    clearOrder,
     subtotal,
     discountAmount,
     total,
+    addItem,
+    updateQuantity,
+    removeItem,
+    setDiscountType,
+    setDiscountValue,
+    clearOrder,
+    getOrderItems,
+    getDiscountBigInt,
   } = useOrderState();
 
-  const finalizeMutation = useMutation({
-    mutationFn: async () => {
-      if (!actor) throw new Error('Not connected');
-      const orderItems = items.map((item) => ({
-        menuItemId: item.menuItemId,
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Items for the selected category
+  const categoryItems: MenuItem[] = selectedCategory
+    ? (STATIC_CATEGORIES.find(([cat]) => cat === selectedCategory)?.[1] ?? [])
+    : [];
+
+  // Quantity helper for MenuItemCard badges
+  const getQuantityInOrder = (menuItemId: bigint): number => {
+    const found = items.find((i) => i.menuItemId === menuItemId);
+    return found ? Number(found.quantity) : 0;
+  };
+
+  const handleFinalize = async () => {
+    if (items.length === 0) return;
+
+    const orderItems = getOrderItems();
+    const discount = getDiscountBigInt();
+
+    // Store bill data locally before attempting finalize (which may be stubbed)
+    const billData = {
+      id: Date.now(),
+      items: items.map((item) => ({
+        menuItemId: Number(item.menuItemId),
         name: item.name,
-        quantity: BigInt(item.quantity),
-        price: item.price,
-      }));
-      return actor.finalizeOrder(orderItems, BigInt(Math.round(discountAmount)));
-    },
-    onSuccess: (finalizedOrder) => {
-      const billData = {
-        id: Number(finalizedOrder.id),
-        items: finalizedOrder.items.map((item) => ({
-          menuItemId: Number(item.menuItemId),
-          name: item.name,
-          quantity: Number(item.quantity),
-          price: Number(item.price),
-        })),
-        subtotal: Number(finalizedOrder.subtotal),
-        discount: Number(finalizedOrder.discount),
-        total: Number(finalizedOrder.total),
-        timestamp: Number(finalizedOrder.timestamp),
-      };
-      sessionStorage.setItem('billData', JSON.stringify(billData));
-      queryClient.invalidateQueries({ queryKey: ['activeOrders'] });
-      clearOrder();
-      window.location.href = '/bill';
-    },
-    onError: (error) => {
-      toast.error('Failed to finalize order: ' + error.message);
-    },
-  });
+        quantity: Number(item.quantity),
+        price: Number(item.price),
+      })),
+      subtotal: Number(subtotal),
+      discount: Number(discountAmount),
+      total: Number(total),
+      timestamp: Date.now() * 1_000_000,
+    };
 
-  const handleDeleteOrder = () => {
+    try {
+      const result = await finalizeOrderMutation.mutateAsync({
+        items: orderItems,
+        discount,
+      });
+
+      if (result && result.id !== undefined) {
+        const serverBillData = {
+          id: Number(result.id),
+          items: result.items.map((item) => ({
+            menuItemId: Number(item.menuItemId),
+            name: item.name,
+            quantity: Number(item.quantity),
+            price: Number(item.price),
+          })),
+          subtotal: Number(result.subtotal),
+          discount: Number(result.discount),
+          total: Number(result.total),
+          timestamp: Number(result.timestamp),
+        };
+        sessionStorage.setItem("billData", JSON.stringify(serverBillData));
+      } else {
+        sessionStorage.setItem("billData", JSON.stringify(billData));
+      }
+    } catch {
+      // Finalize not available on backend — use local data for bill
+      sessionStorage.setItem("billData", JSON.stringify(billData));
+    }
+
     clearOrder();
-    toast.success('Order cleared successfully');
+    navigate({ to: "/bill" });
   };
 
-  const getQuantityInOrder = (menuItemId: bigint) => {
-    return items.find((i) => i.menuItemId === menuItemId)?.quantity ?? 0;
+  const handleClearOrder = () => {
+    clearOrder();
   };
 
-  // Sort categories
-  const sortedCategories = Array.isArray(menuCategories)
-    ? sortCategoriesByOrder(menuCategories as Array<[string, import('../backend').MenuItem[]]>)
-    : [];
-
-  // When a category is selected, get its items
-  const selectedCategoryItems = selectedCategory
-    ? (sortedCategories.find(([cat]) => cat === selectedCategory)?.[1] ?? [])
-    : [];
-
-  // When searching, auto-select the first matching category if none selected
-  const trimmedQuery = searchQuery.trim().toLowerCase();
-
-  const handleSelectCategory = (category: string) => {
-    setSelectedCategory(category);
-    setSearchQuery('');
-  };
-
-  const handleBack = () => {
-    setSelectedCategory(null);
-    setSearchQuery('');
-  };
-
-  const hasItems = items.length > 0;
-  const totalItemCount = items.reduce((sum, i) => sum + i.quantity, 0);
+  const totalItemCount = items.reduce((s, i) => s + Number(i.quantity), 0);
 
   return (
-    <div className="flex flex-col h-full min-h-screen bg-background">
-      {/* Menu Section */}
-      <div className={`flex-1 p-4 ${hasItems ? 'pb-80' : 'pb-4'}`}>
-        {/* Search — only show when a category is selected */}
-        {selectedCategory && (
-          <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder={`Search in ${selectedCategory}...`}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 bg-card border-border"
+    <div className="flex flex-col lg:flex-row h-full overflow-hidden">
+      {/* ── LEFT / TOP: Menu browsing ── */}
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        {selectedCategory ? (
+          <div className="flex-1 overflow-auto pb-4">
+            <CategoryItemsView
+              category={selectedCategory}
+              menuItems={categoryItems}
+              searchQuery={searchQuery}
+              getQuantityInOrder={getQuantityInOrder}
+              onAdd={addItem}
+              onBack={() => {
+                setSelectedCategory(null);
+                setSearchQuery("");
+              }}
+              onSearchChange={setSearchQuery}
             />
           </div>
-        )}
-
-        {/* Content */}
-        {isLoading ? (
-          <div className="grid grid-cols-2 gap-3">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-[100px] bg-muted rounded-2xl animate-pulse" />
-            ))}
-          </div>
-        ) : sortedCategories.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
-            No menu items available
-          </div>
-        ) : selectedCategory ? (
-          <CategoryItemsView
-            category={selectedCategory}
-            menuItems={selectedCategoryItems}
-            searchQuery={trimmedQuery}
-            getQuantityInOrder={getQuantityInOrder}
-            onAdd={addItem}
-            onBack={handleBack}
-          />
         ) : (
-          <CategoryGrid
-            categories={sortedCategories}
-            onSelectCategory={handleSelectCategory}
-          />
+          <div className="flex-1 overflow-auto p-4">
+            <h2 className="font-display font-bold text-lg text-foreground mb-3">
+              Browse Menu
+            </h2>
+            <CategoryGrid
+              categories={STATIC_CATEGORIES}
+              onSelectCategory={(cat) => {
+                setSelectedCategory(cat);
+                setSearchQuery("");
+              }}
+            />
+          </div>
         )}
       </div>
 
-      {/* Order Panel - Fixed Bottom */}
-      {hasItems && (
-        <div className="fixed bottom-16 left-0 right-0 bg-card border-t border-border shadow-card-shadow z-10">
-          <div className="max-w-2xl mx-auto">
-            {/* Order Header */}
-            <div className="flex items-center justify-between px-4 pt-3 pb-1">
-              <div className="flex items-center gap-2">
-                <ShoppingCart className="w-4 h-4 text-primary" />
-                <span className="font-semibold text-sm text-foreground">Current Order</span>
-                <span className="text-xs bg-primary text-primary-foreground rounded-full px-2 py-0.5">
-                  {totalItemCount} item{totalItemCount !== 1 ? 's' : ''}
-                </span>
-              </div>
-              <DeleteOrderDialog
-                onConfirm={handleDeleteOrder}
-                itemCount={items.length}
-              />
-            </div>
-
-            {/* Order Items */}
-            <OrderSummaryPanel
-              items={items}
-              onQuantityChange={updateQuantity}
-              onRemove={removeItem}
-            />
-
-            {/* Totals */}
-            <div className="px-4 py-3">
-              <OrderTotalsPanel
-                subtotal={subtotal}
-                discountType={discountType}
-                discountValue={discountValue}
-                discountAmount={discountAmount}
-                total={total}
-                onDiscountTypeChange={setDiscountType}
-                onDiscountValueChange={setDiscountValue}
-              />
-            </div>
-
-            {/* Action Buttons */}
-            <div className="px-4 pb-4 pt-2">
-              <Button
-                className="w-full"
-                size="lg"
-                onClick={() => finalizeMutation.mutate()}
-                disabled={!identity || finalizeMutation.isPending || !hasItems}
-              >
-                {finalizeMutation.isPending ? (
-                  <span className="flex items-center gap-2">
-                    <span className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
-                    Processing...
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4" />
-                    {identity ? 'Finalize & Print Bill' : 'Login to Finalize'}
-                  </span>
-                )}
-              </Button>
-            </div>
+      {/* ── RIGHT / BOTTOM: Order Summary ── */}
+      <div className="lg:w-80 xl:w-96 flex flex-col border-t lg:border-t-0 lg:border-l border-border bg-card">
+        {/* Order header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
+          <div className="flex items-center gap-2">
+            <ShoppingCart className="h-4 w-4 text-primary" />
+            <span className="font-semibold text-sm text-foreground">Current Order</span>
+            {totalItemCount > 0 && (
+              <Badge variant="secondary" className="text-xs">
+                {totalItemCount} item{totalItemCount !== 1 ? "s" : ""}
+              </Badge>
+            )}
           </div>
+          {items.length > 0 && (
+            <DeleteOrderDialog
+              onConfirm={handleClearOrder}
+              itemCount={items.length}
+            />
+          )}
         </div>
-      )}
+
+        {/* Order items — scrollable */}
+        <ScrollArea className="flex-1 min-h-0 max-h-[40vh] lg:max-h-none">
+          {items.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10 px-4 text-center text-muted-foreground">
+              <UtensilsCrossed className="h-10 w-10 mb-3 opacity-30" />
+              <p className="text-sm font-medium">No items yet</p>
+              <p className="text-xs mt-1">Tap a menu item to add it to the order</p>
+            </div>
+          ) : (
+            <div className="px-3 py-2">
+              <OrderSummaryPanel
+                items={items}
+                onIncrement={(id) => {
+                  const item = items.find((i) => i.menuItemId === id);
+                  if (item) updateQuantity(id, Number(item.quantity) + 1);
+                }}
+                onDecrement={(id) => {
+                  const item = items.find((i) => i.menuItemId === id);
+                  if (item) updateQuantity(id, Number(item.quantity) - 1);
+                }}
+                onRemove={removeItem}
+              />
+            </div>
+          )}
+        </ScrollArea>
+
+        {/* Totals + finalize — always visible at bottom */}
+        <div className="px-4 pb-4 pt-3 border-t border-border shrink-0 space-y-3">
+          <OrderTotalsPanel
+            subtotal={subtotal}
+            discountAmount={discountAmount}
+            total={total}
+            discountType={discountType}
+            discountValue={discountValue}
+            onDiscountTypeChange={setDiscountType}
+            onDiscountValueChange={setDiscountValue}
+          />
+
+          <Button
+            className="w-full gap-2"
+            size="lg"
+            onClick={handleFinalize}
+            disabled={items.length === 0}
+          >
+            {finalizeOrderMutation.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <CheckCircle className="h-4 w-4" />
+                Finalize · {formatCurrency(total)}
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

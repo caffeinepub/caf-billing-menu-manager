@@ -1,46 +1,25 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Food ordering app where the Order page is the first/home page (menu removed from first page).",
+  "summary": "Food ordering app with a full menu page featuring 11 categories. The Order tab is currently not working.",
   "architectural_notes": [],
-  "known_issues": [],
-  "isFixRequest": false,
+  "known_issues": [
+    "Order tab is not responding/not working when clicked"
+  ],
+  "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-change-the-default-route-so-that-navigating-to-redirects-to-order-instead-of-menu",
-      "title": "Change the default route so that navigating to '/' redirects to '/order' instead of '/menu'.",
+      "id": "feature-fix-the-order-tab-in-the-bottom-navigation-bar-so-that-clicking-it-successfully-navigates-to-the-order-order-taking-page-ensure-the-active-route-highlight-works-correctly-for-the-order-route-and-that-the-tab-responds-to-user-interaction-without-errors",
+      "title": "Fix the Order tab in the bottom navigation bar so that clicking it successfully navigates to the Order/order-taking page. Ensure the active route highlight works correctly for the /order route and that the tab responds to user interaction without errors.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
-    },
-    {
-      "id": "feature-remove-the-menu-tab-link-from-the-bottom-navigation-bar-navigation-tsx-so-only-order-and-reports-tabs-are-visible",
-      "title": "Remove the 'Menu' tab/link from the bottom navigation bar (Navigation.tsx) so only 'Order' and 'Reports' tabs are visible.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-keep-the-menu-management-page-menu-accessible-to-admin-users-via-a-route-but-do-not-expose-it-in-the-main-navigation-admin-users-may-access-it-through-the-app-header-or-another-admin-only-entry-point-if-one-exists",
-      "title": "Keep the Menu Management page ('/menu') accessible to admin users via a route, but do not expose it in the main navigation. Admin users may access it through the app header or another admin-only entry point if one exists.",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
     }
   ],
-  "new_feature_requests": [
-    {
-      "id": "AR-1",
-      "summary": "Remove menu from the first page and make Order the first/home page",
-      "reqIds": [],
-      "status": "pending"
-    }
-  ],
+  "new_feature_requests": [],
   "gameProjectType": "none",
-  "projectName": "Café Billing Manager",
+  "projectName": "Fix Order tab navigation not responding",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

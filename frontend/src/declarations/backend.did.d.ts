@@ -10,39 +10,12 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
-export interface DailySales { 'date' : bigint, 'totalSales' : bigint }
-export interface FinalizedOrder {
-  'id' : bigint,
-  'total' : bigint,
-  'finalized' : boolean,
-  'timestamp' : bigint,
-  'discount' : bigint,
-  'items' : Array<OrderItem>,
-  'subtotal' : bigint,
-}
+export interface Category { 'name' : string }
 export interface MenuItem {
   'id' : bigint,
   'name' : string,
   'category' : string,
   'price' : bigint,
-}
-export interface Order {
-  'id' : bigint,
-  'total' : bigint,
-  'timestamp' : bigint,
-  'discount' : bigint,
-  'items' : Array<OrderItem>,
-  'subtotal' : bigint,
-}
-export interface OrderItem {
-  'name' : string,
-  'quantity' : bigint,
-  'price' : bigint,
-  'menuItemId' : bigint,
-}
-export interface PreviousDaySales {
-  'totalBills' : bigint,
-  'totalRevenue' : bigint,
 }
 export interface UserProfile { 'name' : string }
 export type UserRole = { 'admin' : null } |
@@ -50,35 +23,12 @@ export type UserRole = { 'admin' : null } |
   { 'guest' : null };
 export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
-  'addMenuItem' : ActorMethod<[string, bigint, string], bigint>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
-  'clearActiveOrders' : ActorMethod<[], undefined>,
-  'clearAllState' : ActorMethod<[], undefined>,
-  'deleteMenuItem' : ActorMethod<[bigint], undefined>,
-  'deleteOrder' : ActorMethod<[bigint], undefined>,
-  'editMenuItem' : ActorMethod<[bigint, string, bigint, string], undefined>,
-  'finalizeOrder' : ActorMethod<[Array<OrderItem>, bigint], FinalizedOrder>,
-  'getActiveOrders' : ActorMethod<[], Array<Order>>,
   'getAllMenuItems' : ActorMethod<[], Array<MenuItem>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
-  'getDailySalesSummary' : ActorMethod<
-    [],
-    { 'total' : bigint, 'itemCount' : bigint, 'discount' : bigint }
-  >,
-  'getDateWiseSalesHistory' : ActorMethod<
-    [bigint, bigint],
-    Array<FinalizedOrder>
-  >,
-  'getDayWiseTotalSales' : ActorMethod<
-    [[] | [bigint], [] | [bigint]],
-    Array<DailySales>
-  >,
-  'getItemWiseSales' : ActorMethod<[], Array<[string, bigint, bigint]>>,
-  'getMenuItemsByCategory' : ActorMethod<[], Array<[string, Array<MenuItem>]>>,
-  'getMonthlyTotalSales' : ActorMethod<[], Array<[bigint, bigint]>>,
-  'getPreviousDaySales' : ActorMethod<[], [] | [PreviousDaySales]>,
-  'getTodaySales' : ActorMethod<[bigint, bigint], Array<FinalizedOrder>>,
+  'getCategories' : ActorMethod<[], Array<Category>>,
+  'getMenuItemsByCategory' : ActorMethod<[string], Array<MenuItem>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,

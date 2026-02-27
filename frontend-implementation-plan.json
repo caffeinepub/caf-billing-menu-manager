@@ -1,52 +1,33 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Remove Menu page from navigation and make Order the default home page",
+  "title": "Fix Order tab navigation not responding",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Change the default route so that navigating to '/' redirects to '/order' instead of '/menu'",
+      "summary": "Fix the Order tab in the bottom navigation bar so that clicking it successfully navigates to the Order/order-taking page with proper route highlighting",
       "acceptanceCriteria": [
-        "Opening the app at the root URL '/' takes the user directly to the Order page.",
-        "No redirect to '/menu' occurs on initial load."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Update the root index route to redirect to '/order' instead of '/menu'. Modify the IndexRoute configuration to use navigate: { to: '/order' } so that the default landing page is the Order page."
-        }
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "summary": "Remove the 'Menu' tab/link from the bottom navigation bar so only 'Order' and 'Reports' tabs are visible",
-      "acceptanceCriteria": [
-        "The bottom navigation bar no longer shows a 'Menu' tab.",
-        "Only 'Order' and 'Reports' tabs are present in the navigation.",
-        "The active tab highlighting still works correctly for the remaining tabs."
+        "Clicking the Order tab in the bottom navigation bar navigates to the /order page",
+        "The Order tab is visually highlighted as active when on the /order route",
+        "No console errors are thrown when clicking the Order tab",
+        "The OrderTaking page renders correctly after navigation",
+        "Navigation between Order, Menu, and Reports tabs all function without issues"
       ],
       "file_operations": [
         {
           "path": "frontend/src/components/layout/Navigation.tsx",
           "operation": "modify",
-          "description": "Remove the Menu navigation link from the tab bar. Keep only the Order and Reports links. Ensure active route highlighting continues to work correctly for the two remaining tabs."
-        }
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "summary": "Keep the Menu Management page accessible to admin users via a route but remove it from main navigation",
-      "acceptanceCriteria": [
-        "The '/menu' route still renders the MenuManagement page for admin users.",
-        "Non-admin users cannot reach the menu management page through the navigation UI.",
-        "Admin users have at least one way to navigate to Menu Management (e.g., a link in the header when isAdmin is true)."
-      ],
-      "file_operations": [
+          "description": "Fix the Order tab navigation by ensuring the Link component's 'to' prop correctly points to '/order', verify the isActive logic properly highlights the Order tab when on the /order route, and ensure all navigation links use consistent TanStack Router Link components with proper activeProps for visual feedback. Verify that no event handlers are blocking navigation and that the component structure allows click events to propagate correctly."
+        },
         {
-          "path": "frontend/src/components/layout/AppLayout.tsx",
+          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Add an admin-only Menu Management link in the app header that appears when the user has admin privileges. Use the useAdminRole hook to check if the current user is an admin, and conditionally render a link to '/menu' in the header navigation area. This provides admin users access to Menu Management without exposing it in the main bottom navigation."
+          "description": "Verify the /order route is correctly registered in the TanStack Router configuration with the OrderTaking component, ensure the route path matches the navigation link target exactly ('/order'), and confirm the route is not conditionally rendered or blocked by any guards. Remove or adjust the root redirect from '/' to '/order' if it interferes with direct /order navigation, ensuring the Order route is accessible from all navigation contexts."
+        },
+        {
+          "path": "frontend/src/pages/OrderTaking.tsx",
+          "operation": "modify",
+          "description": "Review and ensure the OrderTaking page component exports correctly as the default export, verify it does not have any initialization errors that would prevent rendering, confirm all hooks and queries are properly configured to handle loading states without throwing errors, and ensure the component renders a stable UI even when menu data is still loading. Add error boundaries or fallback states if needed to prevent navigation failures."
         }
       ]
     }

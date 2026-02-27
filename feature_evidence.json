@@ -2,10 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-change-the-default-route-so-that-navigating-to-redirects-to-order-instead-of-menu",
-      "featureTitle": "Change the default route so that navigating to '/' redirects to '/order' instead of '/menu'.",
+      "featureId": "feature-fix-the-order-tab-in-the-bottom-navigation-bar-so-that-clicking-it-successfully-navigates-to-the-order-order-taking-page-ensure-the-active-route-highlight-works-correctly-for-the-order-route-and-that-the-tab-responds-to-user-interaction-without-errors",
+      "featureTitle": "Fix the Order tab in the bottom navigation bar so that clicking it successfully navigates to the Order/order-taking page. Ensure the active route highlight works correctly for the /order route and that the tab responds to user interaction without errors.",
       "files": [
-        "frontend/src/App.tsx"
+        "frontend/src/pages/OrderTaking.tsx"
       ],
       "components": [
         "core-infrastructure@1.0.2",
@@ -17,44 +17,6 @@
       ],
       "testIds": [
         "REQ-1"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-remove-the-menu-tab-link-from-the-bottom-navigation-bar-navigation-tsx-so-only-order-and-reports-tabs-are-visible",
-      "featureTitle": "Remove the 'Menu' tab/link from the bottom navigation bar (Navigation.tsx) so only 'Order' and 'Reports' tabs are visible.",
-      "files": [
-        "frontend/src/components/layout/Navigation.tsx"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0"
-      ],
-      "testIds": [
-        "REQ-2"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-keep-the-menu-management-page-menu-accessible-to-admin-users-via-a-route-but-do-not-expose-it-in-the-main-navigation-admin-users-may-access-it-through-the-app-header-or-another-admin-only-entry-point-if-one-exists",
-      "featureTitle": "Keep the Menu Management page ('/menu') accessible to admin users via a route, but do not expose it in the main navigation. Admin users may access it through the app header or another admin-only entry point if one exists.",
-      "files": [
-        "frontend/src/components/layout/AppLayout.tsx"
-      ],
-      "components": [
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0"
-      ],
-      "testIds": [
-        "REQ-3"
       ],
       "confidence": "high"
     }

@@ -1,72 +1,37 @@
 {
   "kind": "build_request",
-  "title": "Remove Menu page from navigation and make Order the default home page",
-  "projectName": "Café Billing Manager",
-  "priority": "normal",
+  "title": "Fix Order tab navigation not responding",
+  "priority": "high",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Change the default route so that navigating to '/' redirects to '/order' instead of '/menu'.",
+      "text": "Fix the Order tab in the bottom navigation bar so that clicking it successfully navigates to the Order/order-taking page. Ensure the active route highlight works correctly for the /order route and that the tab responds to user interaction without errors.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "remove the menu from the 1st page and make order the 1st page"
+          "how do i order the order tab is not working"
         ]
       },
       "acceptanceCriteria": [
-        "Opening the app at the root URL '/' takes the user directly to the Order page.",
-        "No redirect to '/menu' occurs on initial load."
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Remove the 'Menu' tab/link from the bottom navigation bar (Navigation.tsx) so only 'Order' and 'Reports' tabs are visible.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "remove the menu from the 1st page"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The bottom navigation bar no longer shows a 'Menu' tab.",
-        "Only 'Order' and 'Reports' tabs are present in the navigation.",
-        "The active tab highlighting still works correctly for the remaining tabs."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Keep the Menu Management page ('/menu') accessible to admin users via a route, but do not expose it in the main navigation. Admin users may access it through the app header or another admin-only entry point if one exists.",
-      "target": "frontend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "remove the menu from the 1st page"
-        ]
-      },
-      "acceptanceCriteria": [
-        "The '/menu' route still renders the MenuManagement page for admin users.",
-        "Non-admin users cannot reach the menu management page through the navigation UI.",
-        "Admin users have at least one way to navigate to Menu Management (e.g., a link in the header when isAdmin is true)."
+        "Clicking the Order tab in the bottom navigation bar navigates to the /order page",
+        "The Order tab is visually highlighted as active when on the /order route",
+        "No console errors are thrown when clicking the Order tab",
+        "The OrderTaking page renders correctly after navigation",
+        "Navigation between Order, Menu, and Reports tabs all function without issues"
       ]
     }
   ],
   "constraints": [
-    "Do not modify any file under frontend/src/hooks/ (immutable paths).",
-    "Do not modify files under frontend/src/components/ui/ (immutable paths).",
-    "Do not change any backend logic or data models."
+    "Do not change the backend schema or Motoko actor",
+    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui"
   ],
   "nonGoals": [
-    "Redesigning the Order page layout or adding new order features.",
-    "Changing the Reports page.",
-    "Removing the Menu Management page entirely from the codebase."
+    "Adding new order features or UI changes beyond fixing navigation",
+    "Changing the menu page or reports page",
+    "Modifying authentication flow"
   ],
   "imageRequirements": {
     "required": [],

@@ -1,27 +1,23 @@
-import { formatCurrency, formatDateTime } from '@/lib/utils';
-import BillItemsTable from './BillItemsTable';
-import type { ActiveOrderItem, DiscountType } from '../../hooks/useOrderState';
+import { formatCurrency, formatDateTime } from "@/lib/utils";
+import BillItemsTable from "./BillItemsTable";
+import type { ActiveOrderItem } from "@/hooks/useOrderState";
 
 interface BillLayoutProps {
+  orderId: bigint;
   items: ActiveOrderItem[];
-  subtotal: number;
-  discountType: DiscountType;
-  discountValue: number;
-  discountAmount: number;
-  total: number;
+  subtotal: bigint;
+  discountAmount: bigint;
+  total: bigint;
   timestamp: bigint;
-  orderNumber?: number;
 }
 
 export default function BillLayout({
+  orderId,
   items,
   subtotal,
-  discountType,
-  discountValue,
   discountAmount,
   total,
   timestamp,
-  orderNumber,
 }: BillLayoutProps) {
   return (
     <div className="bill-print-area font-mono text-xs text-black bg-white p-4 max-w-[320px] mx-auto">
@@ -32,15 +28,16 @@ export default function BillLayout({
             src="/assets/generated/cafe-logo.png"
             alt="Simple Sips Cafe Logo"
             className="w-16 h-16 object-contain"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = "none";
+            }}
           />
         </div>
         <h2 className="font-bold text-base tracking-wide">Simple Sips Cafe</h2>
         <p className="text-[10px] text-gray-500 mt-0.5">ESTD 2026 · Billing Receipt</p>
         <div className="border-t border-dashed border-gray-400 mt-2 pt-2">
           <p className="text-[10px]">{formatDateTime(timestamp)}</p>
-          {orderNumber !== undefined && (
-            <p className="text-[10px]">Order #{orderNumber}</p>
-          )}
+          <p className="text-[10px]">Bill #{orderId.toString()}</p>
         </div>
       </div>
 
@@ -53,9 +50,9 @@ export default function BillLayout({
           <span>Subtotal</span>
           <span>{formatCurrency(subtotal)}</span>
         </div>
-        {discountAmount > 0 && (
+        {discountAmount > BigInt(0) && (
           <div className="flex justify-between">
-            <span>Discount ({discountType === 'percentage' ? `${discountValue}%` : 'flat'})</span>
+            <span>Discount</span>
             <span>-{formatCurrency(discountAmount)}</span>
           </div>
         )}

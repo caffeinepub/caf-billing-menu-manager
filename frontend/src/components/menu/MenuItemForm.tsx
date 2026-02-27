@@ -2,10 +2,8 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { CATEGORY_ORDER, CATEGORY_DISPLAY_NAMES } from '../../hooks/useQueries';
-
-// Preset categories use the actual backend category names
-const PRESET_CATEGORIES = CATEGORY_ORDER;
+import { Loader2 } from 'lucide-react';
+import { useGetCategories } from '../../hooks/useQueries';
 
 interface MenuItemFormProps {
   mode: 'create' | 'edit';
@@ -16,20 +14,20 @@ interface MenuItemFormProps {
 }
 
 export default function MenuItemForm({ mode, initialValues, onSubmit, onCancel, isLoading }: MenuItemFormProps) {
+  const { data: categoryList = [], isLoading: categoriesLoading } = useGetCategories();
+
   const [name, setName] = useState(initialValues?.name ?? '');
   const [price, setPrice] = useState(initialValues?.price?.toString() ?? '');
   const [category, setCategory] = useState(initialValues?.category ?? '');
   const [customCategory, setCustomCategory] = useState('');
-  const [useCustom, setUseCustom] = useState(
-    initialValues?.category ? !PRESET_CATEGORIES.includes(initialValues.category) : false
-  );
+  const [useCustom, setUseCustom] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Determine if initial category is a preset once categories load
   useEffect(() => {
-    if (initialValues) {
-      setName(initialValues.name);
-      setPrice(initialValues.price.toString());
-      const isPreset = PRESET_CATEGORIES.includes(initialValues.category);
+    if (initialValues && categoryList.length > 0) {
+      const presetNames = categoryList.map((c) => c.name);
+      const isPreset = presetNames.includes(initialValues.category);
       if (isPreset) {
         setCategory(initialValues.category);
         setUseCustom(false);
@@ -38,7 +36,7 @@ export default function MenuItemForm({ mode, initialValues, onSubmit, onCancel, 
         setUseCustom(true);
       }
     }
-  }, []);
+  }, [categoryList.length]);
 
   const validate = () => {
     const errs: Record<string, string> = {};
@@ -55,94 +53,139 @@ export default function MenuItemForm({ mode, initialValues, onSubmit, onCancel, 
     e.preventDefault();
     if (!validate()) return;
     const finalCategory = useCustom ? customCategory.trim() : category;
-    onSubmit({ name: name.trim(), price: parseFloat(price), category: finalCategory });
+    const priceInPaise = Math.round(parseFloat(price) * 100);
+    onSubmit({ name: name.trim(), price: priceInPaise, category: finalCategory });
   };
+
+  const presetCategories = categoryList.map((c) => c.name);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Name */}
       <div className="space-y-1.5">
-        <Label htmlFor="item-name" className="text-sm font-medium">Item Name</Label>
+        <Label htmlFor="item-name">Item Name</Label>
         <Input
           id="item-name"
-          value={name}
-          onChange={e => setName(e.target.value)}
           placeholder="e.g. Masala Tea"
-          className="h-11"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          disabled={isLoading}
         />
         {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
       </div>
 
+      {/* Price */}
       <div className="space-y-1.5">
-        <Label htmlFor="item-price" className="text-sm font-medium">Price (₹)</Label>
+        <Label htmlFor="item-price">Price (₹)</Label>
         <Input
           id="item-price"
           type="number"
-          min="0"
-          step="1"
-          value={price}
-          onChange={e => setPrice(e.target.value)}
           placeholder="e.g. 25"
-          className="h-11"
+          min="0"
+          step="0.01"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          disabled={isLoading}
         />
         {errors.price && <p className="text-xs text-destructive">{errors.price}</p>}
       </div>
 
+      {/* Category */}
       <div className="space-y-1.5">
-        <Label className="text-sm font-medium">Category</Label>
-        {!useCustom ? (
-          <div className="space-y-2">
-            <div className="grid grid-cols-2 gap-2">
-              {PRESET_CATEGORIES.map(cat => (
+        <Label>Category</Label>
+
+        {categoriesLoading ? (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground py-2">
+            <Loader2 size={14} className="animate-spin" />
+            Loading categories…
+          </div>
+        ) : presetCategories.length === 0 ? (
+          <div className="space-y-1.5">
+            <p className="text-xs text-muted-foreground">
+              No categories found. Please create a category first in Menu Management.
+            </p>
+            <Input
+              placeholder="Or type a category name"
+              value={customCategory}
+              onChange={(e) => setCustomCategory(e.target.value)}
+              disabled={isLoading}
+            />
+          </div>
+        ) : (
+          <>
+            {/* Preset category buttons */}
+            <div className="flex flex-wrap gap-1.5">
+              {presetCategories.map((cat) => (
                 <button
                   key={cat}
                   type="button"
-                  onClick={() => setCategory(cat)}
-                  className={`h-10 px-3 rounded-lg text-sm font-medium border transition-colors ${
-                    category === cat
+                  onClick={() => {
+                    setCategory(cat);
+                    setUseCustom(false);
+                    setErrors((e) => ({ ...e, category: '' }));
+                  }}
+                  disabled={isLoading}
+                  className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                    !useCustom && category === cat
                       ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-card border-border text-foreground hover:bg-secondary'
+                      : 'bg-background text-foreground border-border hover:border-primary/60'
                   }`}
                 >
-                  {CATEGORY_DISPLAY_NAMES[cat] ?? cat}
+                  {cat}
                 </button>
               ))}
+              <button
+                type="button"
+                onClick={() => {
+                  setUseCustom(true);
+                  setCategory('');
+                  setErrors((e) => ({ ...e, category: '' }));
+                }}
+                disabled={isLoading}
+                className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                  useCustom
+                    ? 'bg-primary text-primary-foreground border-primary'
+                    : 'bg-background text-foreground border-border hover:border-primary/60'
+                }`}
+              >
+                + Custom
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => { setUseCustom(true); setCategory(''); }}
-              className="text-xs text-primary underline underline-offset-2 h-auto min-h-0 min-w-0 p-0"
-            >
-              + Add custom category
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <Input
-              value={customCategory}
-              onChange={e => setCustomCategory(e.target.value)}
-              placeholder="Enter category name"
-              className="h-11"
-            />
-            <button
-              type="button"
-              onClick={() => { setUseCustom(false); setCustomCategory(''); }}
-              className="text-xs text-primary underline underline-offset-2 h-auto min-h-0 min-w-0 p-0"
-            >
-              ← Choose from presets
-            </button>
-          </div>
+
+            {/* Custom category input */}
+            {useCustom && (
+              <Input
+                placeholder="Enter custom category"
+                value={customCategory}
+                onChange={(e) => setCustomCategory(e.target.value)}
+                disabled={isLoading}
+                className="mt-1.5"
+              />
+            )}
+          </>
         )}
+
         {errors.category && <p className="text-xs text-destructive">{errors.category}</p>}
       </div>
 
-      <div className="flex gap-3 pt-2">
+      {/* Actions */}
+      <div className="flex gap-2 pt-1">
         {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel} className="flex-1 h-11">
+          <Button type="button" variant="outline" className="flex-1" onClick={onCancel} disabled={isLoading}>
             Cancel
           </Button>
         )}
-        <Button type="submit" disabled={isLoading} className="flex-1 h-11">
-          {isLoading ? 'Saving...' : mode === 'create' ? 'Add Item' : 'Save Changes'}
+        <Button type="submit" className="flex-1" disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <Loader2 size={14} className="animate-spin mr-1.5" />
+              {mode === 'create' ? 'Adding…' : 'Saving…'}
+            </>
+          ) : mode === 'create' ? (
+            'Add Item'
+          ) : (
+            'Save Changes'
+          )}
         </Button>
       </div>
     </form>

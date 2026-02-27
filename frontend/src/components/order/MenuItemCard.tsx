@@ -1,7 +1,7 @@
-import { Card } from '@/components/ui/card';
-import { Plus } from 'lucide-react';
-import type { MenuItem } from '../../backend';
-import { formatCurrencyBigInt } from '@/lib/utils';
+import { Card } from "@/components/ui/card";
+import { Plus } from "lucide-react";
+import type { MenuItem } from "../../backend";
+import { formatCurrency } from "@/lib/utils";
 
 interface MenuItemCardProps {
   item: MenuItem;
@@ -17,7 +17,7 @@ export default function MenuItemCard({ item, quantityInOrder, onAdd }: MenuItemC
     >
       <div className="flex-1 min-w-0 pr-3">
         <p className="font-medium text-sm text-foreground leading-snug break-words">{item.name}</p>
-        <p className="text-sm font-semibold text-primary mt-0.5">{formatCurrencyBigInt(item.price)}</p>
+        <p className="text-sm font-semibold text-primary mt-0.5">{formatCurrency(item.price)}</p>
       </div>
 
       <div className="flex items-center gap-2 shrink-0">

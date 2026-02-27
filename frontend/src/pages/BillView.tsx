@@ -1,46 +1,87 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
-import { Button } from '@/components/ui/button';
-import { Printer, ArrowLeft, ShoppingCart } from 'lucide-react';
-import BillLayout from '../components/bill/BillLayout';
-import type { ActiveOrderItem, DiscountType } from '../hooks/useOrderState';
+import { useEffect, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
+import { Printer, ArrowLeft, AlertCircle } from "lucide-react";
+import BillLayout from "@/components/bill/BillLayout";
+import type { ActiveOrderItem } from "@/hooks/useOrderState";
 
-interface BillData {
-  items: Array<{
-    menuItemId: string;
-    name: string;
-    quantity: number;
-    price: number;
-  }>;
+interface StoredBillItem {
+  menuItemId: number;
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+interface StoredBillData {
+  id: number;
+  items: StoredBillItem[];
   subtotal: number;
   discount: number;
-  discountAmount: number;
   total: number;
   timestamp: number;
-  discountType: DiscountType;
-  discountValue: number;
+}
+
+interface ParsedBill {
+  orderId: bigint;
+  items: ActiveOrderItem[];
+  subtotal: bigint;
+  discountAmount: bigint;
+  total: bigint;
+  timestamp: bigint;
+}
+
+function parseBillData(raw: unknown): ParsedBill | null {
+  if (!raw || typeof raw !== "object") return null;
+  const d = raw as Record<string, unknown>;
+
+  if (
+    typeof d.id !== "number" ||
+    !Array.isArray(d.items) ||
+    typeof d.subtotal !== "number" ||
+    typeof d.discount !== "number" ||
+    typeof d.total !== "number"
+  ) {
+    return null;
+  }
+
+  const items: ActiveOrderItem[] = (d.items as StoredBillItem[]).map((item) => ({
+    menuItemId: BigInt(item.menuItemId ?? 0),
+    name: typeof item.name === "string" ? item.name : "",
+    quantity: BigInt(item.quantity ?? 1),
+    price: BigInt(item.price ?? 0),
+  }));
+
+  return {
+    orderId: BigInt(d.id as number),
+    items,
+    subtotal: BigInt(d.subtotal as number),
+    discountAmount: BigInt(d.discount as number),
+    total: BigInt(d.total as number),
+    timestamp: BigInt(typeof d.timestamp === "number" ? d.timestamp : 0),
+  };
 }
 
 export default function BillView() {
   const navigate = useNavigate();
-  const [billData, setBillData] = useState<BillData | null>(null);
-  const [parseError, setParseError] = useState(false);
+  const [bill, setBill] = useState<ParsedBill | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     try {
-      const raw = sessionStorage.getItem('billData');
+      const raw = sessionStorage.getItem("billData");
       if (!raw) {
-        setParseError(true);
+        setError("No bill data found. Please finalize an order first.");
         return;
       }
-      const parsed: BillData = JSON.parse(raw);
-      if (!parsed || !Array.isArray(parsed.items)) {
-        setParseError(true);
+      const parsed = JSON.parse(raw);
+      const result = parseBillData(parsed);
+      if (!result) {
+        setError("Bill data is corrupted or missing required fields.");
         return;
       }
-      setBillData(parsed);
+      setBill(result);
     } catch {
-      setParseError(true);
+      setError("Failed to load bill data.");
     }
   }, []);
 
@@ -49,26 +90,24 @@ export default function BillView() {
   };
 
   const handleNewOrder = () => {
-    sessionStorage.removeItem('billData');
-    navigate({ to: '/order' });
+    sessionStorage.removeItem("billData");
+    navigate({ to: "/order" });
   };
 
-  if (parseError) {
+  if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
-          <ShoppingCart size={28} className="text-muted-foreground" />
-        </div>
-        <h3 className="font-display font-semibold text-base">No bill to display</h3>
-        <p className="text-sm text-muted-foreground mt-1">Finalize an order first to see the bill.</p>
-        <Button className="mt-4" onClick={() => navigate({ to: '/order' })}>
-          Go to Order
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 p-6 text-center">
+        <AlertCircle className="h-12 w-12 text-destructive" />
+        <p className="text-muted-foreground">{error}</p>
+        <Button onClick={() => navigate({ to: "/order" })}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Order
         </Button>
       </div>
     );
   }
 
-  if (!billData) {
+  if (!bill) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <p className="text-muted-foreground text-sm">Loading bill…</p>
@@ -76,17 +115,9 @@ export default function BillView() {
     );
   }
 
-  // Convert plain number items back to ActiveOrderItem shape (bigint fields)
-  const activeItems: ActiveOrderItem[] = billData.items.map(i => ({
-    menuItemId: BigInt(i.menuItemId),
-    name: i.name,
-    quantity: i.quantity,
-    price: BigInt(i.price),
-  }));
-
   return (
     <div className="min-h-screen bg-background">
-      {/* Action Bar - hidden on print */}
+      {/* Action bar — hidden on print */}
       <div className="no-print sticky top-0 z-10 bg-card border-b border-border px-4 py-3 flex items-center justify-between gap-3">
         <Button variant="ghost" size="sm" onClick={handleNewOrder} className="gap-1.5 h-10">
           <ArrowLeft size={16} />
@@ -99,34 +130,26 @@ export default function BillView() {
         </Button>
       </div>
 
-      {/* Bill Content */}
+      {/* Bill content */}
       <div className="py-6 px-4">
         <div className="bg-white rounded-xl shadow-card overflow-hidden border border-border">
           <BillLayout
-            items={activeItems}
-            subtotal={billData.subtotal}
-            discountType={billData.discountType}
-            discountValue={billData.discountValue}
-            discountAmount={billData.discountAmount}
-            total={billData.total}
-            timestamp={BigInt(billData.timestamp)}
+            orderId={bill.orderId}
+            items={bill.items}
+            subtotal={bill.subtotal}
+            discountAmount={bill.discountAmount}
+            total={bill.total}
+            timestamp={bill.timestamp}
           />
         </div>
 
         <div className="no-print mt-4 space-y-3">
-          <Button
-            className="w-full h-12 gap-2 text-base font-semibold"
-            onClick={handlePrint}
-          >
+          <Button className="w-full h-12 gap-2 text-base font-semibold" onClick={handlePrint}>
             <Printer size={18} />
             Print Bill
           </Button>
-          <Button
-            variant="outline"
-            className="w-full h-12 gap-2"
-            onClick={handleNewOrder}
-          >
-            <ShoppingCart size={16} />
+          <Button variant="outline" className="w-full h-12 gap-2" onClick={handleNewOrder}>
+            <ArrowLeft size={16} />
             Start New Order
           </Button>
         </div>

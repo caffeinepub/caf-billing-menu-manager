@@ -1,60 +1,37 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T15:47:23.120Z",
+  "generatedAt": "2026-02-26T17:51:46.036Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 3,
+    "total": 1,
+    "implemented": 1,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Change the default route so that navigating to '/' redirects to '/order' instead of '/menu'.",
+        "summary": "Fix the Order tab in the bottom navigation bar so that clicking it successfully navigates to the Order/order-taking page. Ensure the active route highlight works correctly for the /order route and that the tab responds to user interaction without errors.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/App.tsx"
+          "frontend/src/components/layout/Navigation.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/pages/OrderTaking.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/App.tsx"
-        ]
-      },
-      {
-        "id": "REQ-2",
-        "summary": "Remove the 'Menu' tab/link from the bottom navigation bar (Navigation.tsx) so only 'Order' and 'Reports' tabs are visible.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/layout/Navigation.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/layout/Navigation.tsx"
-        ]
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Keep the Menu Management page ('/menu') accessible to admin users via a route, but do not expose it in the main navigation. Admin users may access it through the app header or another admin-only entry point if one exists.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/layout/AppLayout.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/layout/AppLayout.tsx"
+          "frontend/src/pages/OrderTaking.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
     "build-request.json",
-    "build-template/README.md",
-    "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/App.tsx",
     "frontend/src/components/layout/AppLayout.tsx",
-    "frontend/src/components/layout/Navigation.tsx",
+    "frontend/src/pages/OrderTaking.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

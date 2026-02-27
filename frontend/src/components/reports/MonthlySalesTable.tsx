@@ -1,4 +1,4 @@
-import { Card } from '@/components/ui/card';
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -7,9 +7,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Skeleton } from '@/components/ui/skeleton';
-import { formatCurrencyBigInt } from '@/lib/utils';
+} from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatCurrency } from "@/lib/utils";
 
 interface MonthlySalesTableProps {
   data: Array<[bigint, bigint]>;
@@ -17,19 +17,16 @@ interface MonthlySalesTableProps {
 }
 
 // Backend uses 30-day months approximation: month = timestamp / (30 * dayInNanoseconds)
-// dayInNanoseconds = 24 * 60 * 60 * 1_000_000_000
 const DAY_IN_NS = BigInt(24 * 60 * 60) * 1_000_000_000n;
 const MONTH_IN_NS = 30n * DAY_IN_NS;
 
 function formatMonthYear(monthIndex: bigint): string {
-  // Convert month index back to a timestamp (start of that approximate month)
   const nsTimestamp = monthIndex * MONTH_IN_NS;
   if (nsTimestamp === 0n) {
-    // timestamp 0 means no real date — show current month
-    return new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+    return new Date().toLocaleDateString("en-IN", { month: "long", year: "numeric" });
   }
   const ms = Number(nsTimestamp) / 1_000_000;
-  return new Date(ms).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+  return new Date(ms).toLocaleDateString("en-IN", { month: "long", year: "numeric" });
 }
 
 export default function MonthlySalesTable({ data, isLoading }: MonthlySalesTableProps) {
@@ -53,9 +50,7 @@ export default function MonthlySalesTable({ data, isLoading }: MonthlySalesTable
     );
   }
 
-  // Sort by month index ascending
   const sorted = [...data].sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
-
   const grandTotal = sorted.reduce((sum, [, total]) => sum + total, 0n);
 
   return (
@@ -74,7 +69,7 @@ export default function MonthlySalesTable({ data, isLoading }: MonthlySalesTable
                 {formatMonthYear(monthIndex)}
               </TableCell>
               <TableCell className="text-sm py-2.5 text-right font-semibold text-primary">
-                {formatCurrencyBigInt(totalSales)}
+                {formatCurrency(totalSales)}
               </TableCell>
             </TableRow>
           ))}
@@ -83,7 +78,7 @@ export default function MonthlySalesTable({ data, isLoading }: MonthlySalesTable
           <TableRow className="bg-secondary/30 font-bold">
             <TableCell className="text-sm py-2.5 font-bold">Grand Total</TableCell>
             <TableCell className="text-sm py-2.5 text-right font-bold text-primary">
-              {formatCurrencyBigInt(grandTotal)}
+              {formatCurrency(grandTotal)}
             </TableCell>
           </TableRow>
         </TableFooter>

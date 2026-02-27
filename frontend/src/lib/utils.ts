@@ -1,34 +1,59 @@
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: number): string {
-  return `₹${amount.toFixed(2)}`;
+export function formatCurrency(amount: bigint | number): string {
+  const num = typeof amount === "bigint" ? Number(amount) : amount;
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(num / 100);
 }
 
-export function formatCurrencyBigInt(amount: bigint): string {
-  return `₹${Number(amount).toFixed(2)}`;
-}
+// Alias kept for any remaining usages
+export const formatCurrencyBigInt = formatCurrency;
 
 export function formatDate(timestamp: bigint | number): string {
-  const ts = typeof timestamp === 'bigint' ? Number(timestamp) : timestamp;
-  if (ts === 0) return new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-  // ICP timestamps are in nanoseconds
+  const ts = typeof timestamp === "bigint" ? Number(timestamp) : timestamp;
+  if (ts === 0) {
+    return new Date().toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  }
   const ms = ts / 1_000_000;
-  return new Date(ms).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+  return new Date(ms).toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 export function formatDateTime(timestamp: bigint | number): string {
-  const ts = typeof timestamp === 'bigint' ? Number(timestamp) : timestamp;
+  const ts = typeof timestamp === "bigint" ? Number(timestamp) : timestamp;
   if (ts === 0) {
-    const now = new Date();
-    return now.toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    return new Date().toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   }
   const ms = ts / 1_000_000;
-  return new Date(ms).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  return new Date(ms).toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 export function dateToNanoseconds(date: Date): bigint {
@@ -47,25 +72,33 @@ export function endOfDay(date: Date): Date {
   return d;
 }
 
-// Fixed category display order for the café menu
-// These match the actual backend category names used in migration.mo
+// Category order matches the exact backend category names (mixed case)
 export const MENU_CATEGORY_ORDER = [
-  'TEA',
-  'COFFEE',
-  'SANDWICH',
-  'TOAST',
-  'LIGHT SNACKS',
-  'MOMOS',
-  'BURGERS',
-  'STARTERS',
-  'REFRESHERS',
-  'COMBO',
+  "Tea",
+  "Coffee",
+  "Sandwich",
+  "Toast",
+  "Light Snacks",
+  "Momos",
+  "Burgers",
+  "Starters",
+  "Refreshers",
+  "Beverages",
+  "Combo",
+  // Legacy uppercase fallbacks
+  "TEA",
+  "COFFEE",
+  "SANDWICH",
+  "TOAST",
+  "LIGHT SNACKS",
+  "MOMOS",
+  "BURGERS",
+  "STARTERS",
+  "REFRESHERS",
+  "BEVERAGES",
+  "COMBO",
 ];
 
-/**
- * Sort an array of category name strings in the canonical café menu order.
- * Categories not in the fixed list appear at the end in their original order.
- */
 export function sortMenuCategories(categories: string[]): string[] {
   return [...categories].sort((a, b) => {
     const ai = MENU_CATEGORY_ORDER.indexOf(a);
@@ -77,28 +110,40 @@ export function sortMenuCategories(categories: string[]): string[] {
   });
 }
 
-/**
- * Get a human-friendly display name for a backend category name.
- */
+const CATEGORY_DISPLAY_MAP: Record<string, string> = {
+  // Mixed case (actual backend values)
+  Tea: "Tea",
+  Coffee: "Coffee",
+  Sandwich: "Sandwich",
+  Toast: "Toast",
+  "Light Snacks": "Light Snacks",
+  Momos: "Momos",
+  Burgers: "Burgers",
+  Starters: "Starters",
+  Refreshers: "Refreshers",
+  Beverages: "Beverages",
+  Combo: "Combo",
+  // Legacy uppercase fallbacks
+  TEA: "Tea",
+  COFFEE: "Coffee",
+  SANDWICH: "Sandwich",
+  TOAST: "Toast",
+  "LIGHT SNACKS": "Light Snacks",
+  MOMOS: "Momos",
+  BURGERS: "Burgers",
+  STARTERS: "Starters",
+  REFRESHERS: "Refreshers",
+  BEVERAGES: "Beverages",
+  COMBO: "Combo",
+  // Other legacy fallbacks
+  "Tea (Non-Alcoholic Beverages)": "Tea",
+  "Coffee (Non-Alcoholic Beverages)": "Coffee",
+  Momo: "Momos",
+  Burger: "Burgers",
+  Starter: "Starters",
+  Refresher: "Refreshers",
+};
+
 export function getCategoryDisplayName(category: string): string {
-  const displayNames: Record<string, string> = {
-    'TEA': 'Tea',
-    'COFFEE': 'Coffee',
-    'SANDWICH': 'Sandwich',
-    'TOAST': 'Toast',
-    'LIGHT SNACKS': 'Light Snacks',
-    'MOMOS': 'Momos',
-    'BURGERS': 'Burgers',
-    'STARTERS': 'Starters',
-    'REFRESHERS': 'Refreshers',
-    'COMBO': 'Combo',
-    // Legacy fallbacks
-    'Tea (Non-Alcoholic Beverages)': 'Tea',
-    'Coffee (Non-Alcoholic Beverages)': 'Coffee',
-    'Momo': 'Momos',
-    'Burger': 'Burgers',
-    'Starter': 'Starters',
-    'Refresher': 'Refreshers',
-  };
-  return displayNames[category] ?? category;
+  return CATEGORY_DISPLAY_MAP[category] ?? category;
 }

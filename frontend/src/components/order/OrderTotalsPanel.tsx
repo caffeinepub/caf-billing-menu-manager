@@ -1,24 +1,24 @@
-import { Separator } from '@/components/ui/separator';
-import { Input } from '@/components/ui/input';
-import { formatCurrency } from '@/lib/utils';
-import type { DiscountType } from '../../hooks/useOrderState';
+import { formatCurrency } from "@/lib/utils";
+import type { DiscountType } from "@/hooks/useOrderState";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface OrderTotalsPanelProps {
-  subtotal: number;
+  subtotal: bigint;
+  discountAmount: bigint;
+  total: bigint;
   discountType: DiscountType;
   discountValue: number;
-  discountAmount: number;
-  total: number;
   onDiscountTypeChange: (type: DiscountType) => void;
   onDiscountValueChange: (value: number) => void;
 }
 
 export default function OrderTotalsPanel({
   subtotal,
-  discountType,
-  discountValue,
   discountAmount,
   total,
+  discountType,
+  discountValue,
   onDiscountTypeChange,
   onDiscountValueChange,
 }: OrderTotalsPanelProps) {
@@ -30,54 +30,54 @@ export default function OrderTotalsPanel({
         <span className="font-medium">{formatCurrency(subtotal)}</span>
       </div>
 
-      {/* Discount */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Discount</span>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => onDiscountTypeChange('flat')}
-              className={`h-7 px-2 text-xs rounded-l-md border transition-colors ${
-                discountType === 'flat'
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-card border-border text-muted-foreground'
-              }`}
-            >
-              ₹
-            </button>
-            <button
-              type="button"
-              onClick={() => onDiscountTypeChange('percentage')}
-              className={`h-7 px-2 text-xs rounded-r-md border-t border-r border-b transition-colors ${
-                discountType === 'percentage'
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-card border-border text-muted-foreground'
-              }`}
-            >
-              %
-            </button>
-            <Input
-              type="number"
-              min="0"
-              value={discountValue || ''}
-              onChange={e => onDiscountValueChange(parseFloat(e.target.value) || 0)}
-              placeholder="0"
-              className="w-16 h-7 text-xs text-center px-1"
-            />
-          </div>
+      {/* Discount controls */}
+      <div className="space-y-2">
+        <div className="flex gap-2">
+          <Button
+            variant={discountType === "flat" ? "default" : "outline"}
+            size="sm"
+            className="flex-1 text-xs h-7"
+            onClick={() => onDiscountTypeChange("flat")}
+          >
+            Flat (₹)
+          </Button>
+          <Button
+            variant={discountType === "percentage" ? "default" : "outline"}
+            size="sm"
+            className="flex-1 text-xs h-7"
+            onClick={() => onDiscountTypeChange("percentage")}
+          >
+            Percent (%)
+          </Button>
         </div>
-        <span className="text-sm font-medium text-green-700 dark:text-green-400">
-          {discountAmount > 0 ? `-${formatCurrency(discountAmount)}` : formatCurrency(0)}
-        </span>
+        <Input
+          type="number"
+          min={0}
+          max={discountType === "percentage" ? 100 : undefined}
+          value={discountValue === 0 ? "" : discountValue}
+          placeholder={discountType === "flat" ? "Discount amount (₹)" : "Discount %"}
+          onChange={(e) => {
+            const val = parseFloat(e.target.value);
+            onDiscountValueChange(isNaN(val) ? 0 : val);
+          }}
+          className="h-8 text-sm"
+        />
       </div>
 
-      <Separator />
+      {/* Discount row */}
+      {discountAmount > BigInt(0) && (
+        <div className="flex justify-between text-sm text-green-600 dark:text-green-400">
+          <span>Discount</span>
+          <span>- {formatCurrency(discountAmount)}</span>
+        </div>
+      )}
 
       {/* Total */}
-      <div className="flex justify-between items-center">
-        <span className="font-display font-bold text-base text-foreground">Total</span>
-        <span className="font-display font-bold text-xl text-primary">{formatCurrency(total)}</span>
+      <div className="border-t border-border pt-2">
+        <div className="flex justify-between font-bold text-base">
+          <span>Total</span>
+          <span className="text-primary">{formatCurrency(total)}</span>
+        </div>
       </div>
     </div>
   );

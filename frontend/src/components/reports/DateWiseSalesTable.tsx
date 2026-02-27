@@ -1,4 +1,4 @@
-import { Card } from '@/components/ui/card';
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -7,12 +7,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Skeleton } from '@/components/ui/skeleton';
-import { formatCurrencyBigInt, formatDate } from '@/lib/utils';
-import type { DailySales, FinalizedOrder } from '../../backend';
+} from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import type { FinalizedOrder, DailySales } from "../../hooks/useQueries";
 
-// dayInNanoseconds matches the backend constant: 24 * 60 * 60 * 1_000_000_000
 const DAY_IN_NS = BigInt(24 * 60 * 60) * 1_000_000_000n;
 
 interface DateWiseSalesTableProps {
@@ -28,17 +27,13 @@ interface DayRow {
 }
 
 function buildRows(dailySales: DailySales[], orders: FinalizedOrder[]): DayRow[] {
-  // Build bill count map keyed by date label
   const billCountMap = new Map<string, number>();
   for (const order of orders) {
     const label = formatDate(order.timestamp);
     billCountMap.set(label, (billCountMap.get(label) ?? 0) + 1);
   }
 
-  // Build rows from dailySales, converting day index back to a timestamp
   const rows: DayRow[] = dailySales.map((ds) => {
-    // ds.date is the day index (timestamp / dayInNanoseconds)
-    // Convert back: day * DAY_IN_NS gives nanoseconds at start of that day
     const nsTimestamp = ds.date * DAY_IN_NS;
     const dateLabel = formatDate(nsTimestamp);
     return {
@@ -48,7 +43,6 @@ function buildRows(dailySales: DailySales[], orders: FinalizedOrder[]): DayRow[]
     };
   });
 
-  // Sort chronologically by date label (using the underlying timestamp)
   const sorted = dailySales
     .map((ds, i) => ({ ds, row: rows[i] }))
     .sort((a, b) => (a.ds.date < b.ds.date ? -1 : a.ds.date > b.ds.date ? 1 : 0))
@@ -57,7 +51,11 @@ function buildRows(dailySales: DailySales[], orders: FinalizedOrder[]): DayRow[]
   return sorted;
 }
 
-export default function DateWiseSalesTable({ dailySales, orders, isLoading }: DateWiseSalesTableProps) {
+export default function DateWiseSalesTable({
+  dailySales,
+  orders,
+  isLoading,
+}: DateWiseSalesTableProps) {
   if (isLoading) {
     return (
       <Card className="p-4">
@@ -103,11 +101,11 @@ export default function DateWiseSalesTable({ dailySales, orders, isLoading }: Da
                     {row.billCount}
                   </span>
                 ) : (
-                  '—'
+                  "—"
                 )}
               </TableCell>
               <TableCell className="text-sm py-2.5 text-right font-semibold text-primary">
-                {formatCurrencyBigInt(row.totalSale)}
+                {formatCurrency(row.totalSale)}
               </TableCell>
             </TableRow>
           ))}
@@ -121,11 +119,11 @@ export default function DateWiseSalesTable({ dailySales, orders, isLoading }: Da
                   {totalBills}
                 </span>
               ) : (
-                '—'
+                "—"
               )}
             </TableCell>
             <TableCell className="text-sm py-2.5 text-right font-bold text-primary">
-              {formatCurrencyBigInt(grandTotal)}
+              {formatCurrency(grandTotal)}
             </TableCell>
           </TableRow>
         </TableFooter>

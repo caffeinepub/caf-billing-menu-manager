@@ -1,5 +1,5 @@
-import { formatCurrency } from '@/lib/utils';
-import type { ActiveOrderItem } from '../../hooks/useOrderState';
+import { formatCurrency } from "@/lib/utils";
+import type { ActiveOrderItem } from "@/hooks/useOrderState";
 
 interface BillItemsTableProps {
   items: ActiveOrderItem[];
@@ -17,12 +17,14 @@ export default function BillItemsTable({ items }: BillItemsTableProps) {
         </tr>
       </thead>
       <tbody>
-        {items.map(item => (
-          <tr key={item.menuItemId.toString()} className="border-b border-dotted border-gray-300">
+        {items.map((item, idx) => (
+          <tr key={idx} className="border-b border-dotted border-gray-300 last:border-0">
             <td className="py-1 pr-2">{item.name}</td>
-            <td className="py-1 text-center">{item.quantity}</td>
-            <td className="py-1 text-right">{formatCurrency(Number(item.price))}</td>
-            <td className="py-1 text-right font-medium">{formatCurrency(Number(item.price) * item.quantity)}</td>
+            <td className="py-1 text-center">{Number(item.quantity)}</td>
+            <td className="py-1 text-right">{formatCurrency(item.price)}</td>
+            <td className="py-1 text-right font-medium">
+              {formatCurrency(item.price * item.quantity)}
+            </td>
           </tr>
         ))}
       </tbody>

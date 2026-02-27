@@ -1,17 +1,15 @@
 import Map "mo:core/Map";
 import Text "mo:core/Text";
 import Nat "mo:core/Nat";
-import Int "mo:core/Int";
-import CoreOrder "mo:core/Order";
-import Iter "mo:core/Iter";
 import List "mo:core/List";
 import Runtime "mo:core/Runtime";
 import Principal "mo:core/Principal";
-
+import Int "mo:core/Int";
+import Iter "mo:core/Iter";
 import AccessControl "authorization/access-control";
 import MixinAuthorization "authorization/MixinAuthorization";
 
-// Specify the data migration function in with-clause
+
 
 actor {
   type MenuItem = {
@@ -21,20 +19,15 @@ actor {
     category : Text;
   };
 
+  type Category = {
+    name : Text;
+  };
+
   type OrderItem = {
     menuItemId : Nat;
     name : Text;
     quantity : Nat;
     price : Nat;
-  };
-
-  type Order = {
-    id : Nat;
-    items : [OrderItem];
-    subtotal : Nat;
-    discount : Nat;
-    total : Nat;
-    timestamp : Int;
   };
 
   type FinalizedOrder = {
@@ -51,62 +44,104 @@ actor {
     name : Text;
   };
 
-  type DailySales = {
-    date : Int;
-    totalSales : Nat;
-  };
-
-  type PreviousDaySales = {
-    totalRevenue : Nat;
-    totalBills : Nat;
-  };
-
-  module MenuItem {
-    public func compare(menuItem1 : MenuItem, menuItem2 : MenuItem) : CoreOrder.Order {
-      if (menuItem1.id < menuItem2.id) { #less } else if (menuItem1.id == menuItem2.id) { #equal } else { #greater };
-    };
-
-    public func compareByCategory(menuItem1 : MenuItem, menuItem2 : MenuItem) : CoreOrder.Order {
-      switch (Text.compare(menuItem1.category, menuItem2.category)) {
-        case (#equal) {
-          if (menuItem1.id < menuItem2.id) {
-            #less;
-          } else if (menuItem1.id == menuItem2.id) {
-            #equal;
-          } else { #greater };
-        };
-        case (order) { order };
-      };
-    };
-  };
-
-  module Order {
-    public func compare(order1 : Order, order2 : Order) : CoreOrder.Order {
-      if (order1.timestamp < order2.timestamp) { #less } else if (order1.timestamp == order2.timestamp) { #equal } else { #greater };
-    };
-  };
-
-  // Initialize the user system state
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
   let menuItems = Map.empty<Nat, MenuItem>();
-  var orders = List.empty<Order>();
-  var finalizedOrders = List.empty<FinalizedOrder>();
+  let categories = Map.empty<Text, Category>();
   let userProfiles = Map.empty<Principal, UserProfile>();
+  var finalizedOrders : List.List<FinalizedOrder> = List.empty<FinalizedOrder>();
   var nextOrderId = 1;
   var nextFinalizedOrderId = 1;
-
   let dayInNanoseconds : Int = 24 * 60 * 60 * 1000000000;
-
-  // Define Int min and max values based on 64-bit range
   let intMinValue : Int = -9223372036854775808;
   let intMaxValue : Int = 9223372036854775807;
+
+  // Menu Data (persistent type)
+  let menuData : [{ name : Text; price : Nat; category : Text }] = [
+    { name = "Small Tea"; price = 1000; category = "Tea" },
+    { name = "Normal Tea"; price = 2000; category = "Tea" },
+    { name = "Masala Tea"; price = 2500; category = "Tea" },
+    { name = "Ginger Tea"; price = 2500; category = "Tea" },
+    { name = "Elaichi Tea"; price = 2500; category = "Tea" },
+    { name = "Kesar Tea"; price = 4000; category = "Tea" },
+    { name = "Malai Tea"; price = 3000; category = "Tea" },
+    { name = "Green Tea"; price = 3000; category = "Tea" },
+    { name = "Black Tea"; price = 2000; category = "Tea" },
+    { name = "Lemon Tea"; price = 2000; category = "Tea" },
+    { name = "Darjeeling Tea"; price = 3500; category = "Tea" },
+    { name = "Lemon Iced Tea (300 ML)"; price = 6000; category = "Tea" },
+    { name = "Milk Coffee"; price = 4000; category = "Coffee" },
+    { name = "Cappuccino"; price = 6000; category = "Coffee" },
+    { name = "Americano"; price = 5000; category = "Coffee" },
+    { name = "Iced Americano"; price = 7000; category = "Coffee" },
+    { name = "Cold Coffee"; price = 7000; category = "Coffee" },
+    { name = "Veg Sandwich"; price = 6000; category = "Sandwich" },
+    { name = "Cheese Corn Sandwich"; price = 8500; category = "Sandwich" },
+    { name = "Paneer Sandwich"; price = 10000; category = "Sandwich" },
+    { name = "Double Jumbo Sandwich"; price = 12000; category = "Sandwich" },
+    { name = "Butter Toast"; price = 4000; category = "Toast" },
+    { name = "Peri Peri Toast"; price = 5000; category = "Toast" },
+    { name = "Jam Toast"; price = 4000; category = "Toast" },
+    { name = "Malai Toast"; price = 5000; category = "Toast" },
+    { name = "Wai Wai (Soup)"; price = 4500; category = "Light Snacks" },
+    { name = "Wai Wai (Dry)"; price = 4500; category = "Light Snacks" },
+    { name = "Maggi (Soup)"; price = 4500; category = "Light Snacks" },
+    { name = "Maggi (Dry)"; price = 4500; category = "Light Snacks" },
+    { name = "Butter Maggi"; price = 5500; category = "Light Snacks" },
+    { name = "Vegetables Maggi"; price = 6000; category = "Light Snacks" },
+    { name = "Cheese Maggi"; price = 6500; category = "Light Snacks" },
+    { name = "Corn Maggi"; price = 7000; category = "Light Snacks" },
+    { name = "Cheese Corn Maggi"; price = 7500; category = "Light Snacks" },
+    { name = "Pasta (Red)"; price = 8500; category = "Light Snacks" },
+    { name = "Pasta (White)"; price = 8500; category = "Light Snacks" },
+    { name = "Veg Momo (Steam - 8 pcs)"; price = 5000; category = "Momos" },
+    { name = "Veg Momo (Fry - 6 pcs)"; price = 6000; category = "Momos" },
+    { name = "Cheese Momo (Steam - 8 pcs)"; price = 7000; category = "Momos" },
+    { name = "Cheese Momo (Fry - 6 pcs)"; price = 8000; category = "Momos" },
+    { name = "Corn Cheese Momo (Steam - 8 pcs)"; price = 8000; category = "Momos" },
+    { name = "Corn Cheese Momo (Fry - 6 pcs)"; price = 9000; category = "Momos" },
+    { name = "Paneer Momo (Steam - 8 pcs)"; price = 9000; category = "Momos" },
+    { name = "Paneer Momo (Fry - 6 pcs)"; price = 10000; category = "Momos" },
+    { name = "Kurkure Momo"; price = 8000; category = "Momos" },
+    { name = "Chilli Momo"; price = 8000; category = "Momos" },
+    { name = "Veg Burger"; price = 6000; category = "Burgers" },
+    { name = "Cheese Burger"; price = 7000; category = "Burgers" },
+    { name = "Paneer Burger"; price = 9000; category = "Burgers" },
+    { name = "French Fries"; price = 7000; category = "Starters" },
+    { name = "Peri Peri Fries"; price = 8500; category = "Starters" },
+    { name = "American Corn"; price = 8000; category = "Starters" },
+    { name = "Chilli Potato"; price = 9000; category = "Starters" },
+    { name = "Baby Corn Chilli"; price = 10000; category = "Starters" },
+    { name = "Paneer Pakora (6 pcs)"; price = 9000; category = "Starters" },
+    { name = "Smileys (6 pcs)"; price = 7500; category = "Starters" },
+    { name = "Potato Cheese Shots (7 pcs)"; price = 7000; category = "Starters" },
+    { name = "Masala Coke"; price = 5000; category = "Refreshers" },
+    { name = "Fresh Lime Soda"; price = 5000; category = "Refreshers" },
+    { name = "Mojito"; price = 7500; category = "Refreshers" },
+    { name = "Water (500 ML)"; price = 1000; category = "Beverages" },
+    { name = "Water (1 Litre)"; price = 2000; category = "Beverages" },
+    { name = "Water (2 Litre)"; price = 3000; category = "Beverages" },
+    { name = "Soft Drink"; price = 4000; category = "Beverages" },
+    { name = "Masala / Ginger Tea + Butter Toast"; price = 5500; category = "Combo" },
+    { name = "Normal Tea + Malai Toast"; price = 6500; category = "Combo" },
+    { name = "Veg Sandwich + Normal Tea"; price = 7500; category = "Combo" },
+    { name = "Maggi + Milk Coffee"; price = 8000; category = "Combo" },
+    { name = "French Fries + Cold Coffee"; price = 13500; category = "Combo" },
+    { name = "Corn Cheese Sandwich + Cold Coffee"; price = 15000; category = "Combo" },
+    { name = "Veg Momo + Lemon Iced Tea"; price = 10500; category = "Combo" },
+    { name = "Paneer Pakora (6 pcs) + Masala Tea"; price = 11000; category = "Combo" },
+    { name = "Pasta + Cold Coffee"; price = 15000; category = "Combo" },
+    { name = "Veg Burger + Smileys (6 pcs) + Tea"; price = 14000; category = "Combo" },
+    { name = "Chilli Potato + Green Tea"; price = 11500; category = "Combo" },
+    { name = "Paneer Sandwich + Peri Peri Fries"; price = 18000; category = "Combo" },
+    { name = "Cheese Burger + Peri Peri Fries + Cold Coffee"; price = 21000; category = "Combo" },
+  ];
 
   // User Profile Management
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can view profiles");
+      Runtime.trap("Unauthorized: Only users can get their profile");
     };
     userProfiles.get(caller);
   };
@@ -125,331 +160,20 @@ actor {
     userProfiles.add(caller, profile);
   };
 
-  // Menu Management - Admin only
-  public shared ({ caller }) func addMenuItem(name : Text, price : Nat, category : Text) : async Nat {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can perform this action");
-    };
-    let id = menuItems.size() + 1;
-    let item : MenuItem = {
-      id;
-      name;
-      price;
-      category;
-    };
-    menuItems.add(id, item);
-    id;
+  // Menu Queries
+  public query ({ caller }) func getCategories() : async [Category] {
+    categories.values().toArray();
   };
 
-  public shared ({ caller }) func editMenuItem(id : Nat, name : Text, price : Nat, category : Text) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can perform this action");
-    };
-    switch (menuItems.get(id)) {
-      case (null) {
-        Runtime.trap("Menu item not found");
-      };
-      case (?_) {
-        let updatedItem : MenuItem = {
-          id;
-          name;
-          price;
-          category;
-        };
-        menuItems.add(id, updatedItem);
-      };
-    };
-  };
-
-  public shared ({ caller }) func deleteMenuItem(id : Nat) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can perform this action");
-    };
-    if (not menuItems.containsKey(id)) {
-      Runtime.trap("Menu item not found");
-    };
-    menuItems.remove(id);
-  };
-
-  // Menu Queries - Public (no auth required)
-  public query func getMenuItemsByCategory() : async [(Text, [MenuItem])] {
-    let categories = List.empty<Text>();
-    let categoryMap = Map.empty<Text, [MenuItem]>();
-
-    for (item in menuItems.values()) {
-      // Check if category exists in categories array
-      let existing = categories.toArray().find(func(cat) { Text.equal(cat, item.category) });
-
-      switch (existing) {
-        case (null) {
-          categories.add(item.category);
-          categoryMap.add(item.category, [item]);
-        };
-        case (?_) {
-          switch (categoryMap.get(item.category)) {
-            case (null) { categoryMap.add(item.category, [item]) };
-            case (?items) {
-              let updatedItems = items.concat([item]);
-              categoryMap.add(item.category, updatedItems);
-            };
-          };
-        };
-      };
-    };
-
-    categoryMap.toArray();
-  };
-
-  public query func getAllMenuItems() : async [MenuItem] {
+  public query ({ caller }) func getAllMenuItems() : async [MenuItem] {
     menuItems.values().toArray();
   };
 
-  // Order Finalization - Users and admins can record orders (staff taking orders at the counter)
-  public shared ({ caller }) func finalizeOrder(orderItems : [OrderItem], discount : Nat) : async FinalizedOrder {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can perform this action");
-    };
-    let subtotal = orderItems.foldLeft(
-      0,
-      func(acc, item) {
-        acc + (item.price * item.quantity);
-      },
-    );
-
-    // Calculate final total as subtotal minus discount (no tax)
-    let total = if (discount > subtotal) { 0 } else { subtotal - discount };
-    let timestamp = 0; // Placeholder value until time support is implemented
-
-    let order : FinalizedOrder = {
-      id = nextFinalizedOrderId;
-      items = orderItems;
-      subtotal;
-      discount;
-      total;
-      timestamp;
-      finalized = true;
-    };
-
-    nextFinalizedOrderId += 1;
-    finalizedOrders.add(order);
-    order;
-  };
-
-  // New function: deleteOrder
-  public shared ({ caller }) func deleteOrder(orderId : Nat) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user)) and not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Only users or admins can perform this action");
-    };
-
-    let filteredOrders = orders.toArray().filter(
-      func(order) {
-        order.id != orderId;
+  public query ({ caller }) func getMenuItemsByCategory(category : Text) : async [MenuItem] {
+    menuItems.values().toArray().filter(
+      func(item) {
+        Text.equal(item.category, category);
       }
     );
-
-    orders.clear();
-    for (order in filteredOrders.values()) {
-      orders.add(order);
-    };
-  };
-
-  // Order Tracking - Get active (not finalized) orders (Users/admins)
-  public query ({ caller }) func getActiveOrders() : async [Order] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user)) and not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Only users or admins can perform this action");
-    };
-    orders.toArray();
-  };
-
-  // Sales Reports - Now user role required for all callers
-  public query ({ caller }) func getDailySalesSummary() : async {
-    itemCount : Nat;
-    total : Nat;
-    discount : Nat;
-  } {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can perform this action");
-    };
-    let today = 0 / dayInNanoseconds; // Placeholder value until time support is implemented
-
-    var itemCount = 0;
-    var total = 0;
-    var discount = 0;
-
-    for (order in finalizedOrders.values()) {
-      let orderDay = order.timestamp / dayInNanoseconds;
-      if (orderDay == today) {
-        itemCount += order.items.size();
-        total += order.total;
-        discount += order.discount;
-      };
-    };
-
-    {
-      itemCount;
-      total;
-      discount;
-    };
-  };
-
-  public query ({ caller }) func getItemWiseSales() : async [(Text, Nat, Nat)] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can perform this action");
-    };
-    let salesMap = Map.empty<Text, (Nat, Nat)>();
-
-    for (order in finalizedOrders.values()) {
-      for (item in order.items.values()) {
-        switch (salesMap.get(item.name)) {
-          case (null) {
-            salesMap.add(item.name, (item.quantity, item.price * item.quantity));
-          };
-          case (?(qty, revenue)) {
-            salesMap.add(item.name, (qty + item.quantity, revenue + (item.price * item.quantity)));
-          };
-        };
-      };
-    };
-
-    let resultArray = salesMap.toArray().map(
-      func((name, (qty, revenue))) { (name, qty, revenue) }
-    );
-    resultArray.sort(
-      func((name1, _, _), (name2, _, _)) { Text.compare(name1, name2) }
-    );
-  };
-
-  public query ({ caller }) func getDateWiseSalesHistory(startDate : Int, endDate : Int) : async [FinalizedOrder] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can perform this action");
-    };
-    finalizedOrders.toArray().filter(
-      func(order) {
-        order.timestamp >= startDate and order.timestamp <= endDate
-      }
-    ).sort();
-  };
-
-  // New method to retrieve orders by a specific date range
-  public query ({ caller }) func getTodaySales(startTimestamp : Int, endTimestamp : Int) : async [FinalizedOrder] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can access this method");
-    };
-
-    let filteredOrders = finalizedOrders.toArray().filter(
-      func(order) {
-        order.timestamp >= startTimestamp and order.timestamp <= endTimestamp
-      }
-    );
-
-    filteredOrders.sort();
-  };
-
-  // New backend query for day-wise total sales
-  public query ({ caller }) func getDayWiseTotalSales(startDate : ?Int, endDate : ?Int) : async [DailySales] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can perform this action");
-    };
-
-    // Use provided date range or default to cover all records
-    let start : Int = switch (startDate) {
-      case (?d) { d };
-      case (null) { intMinValue };
-    };
-    let end : Int = switch (endDate) {
-      case (?d) { d };
-      case (null) { intMaxValue };
-    };
-
-    let salesMap = Map.empty<Int, Nat>();
-
-    func updateSalesMap(timestamp : Int, total : Nat) {
-      let day = timestamp / dayInNanoseconds;
-      let existingTotal = switch (salesMap.get(day)) {
-        case (?oldTotal) { oldTotal };
-        case (null) { 0 };
-      };
-      salesMap.add(day, existingTotal + total);
-    };
-
-    for (order in finalizedOrders.values()) {
-      if (order.timestamp >= start and order.timestamp <= end) {
-        updateSalesMap(order.timestamp, order.total);
-      };
-    };
-
-    salesMap.toArray().map(
-      func((date, totalSales)) { { date; totalSales } }
-    );
-  };
-
-  // New backend query for monthly total sales
-  public query ({ caller }) func getMonthlyTotalSales() : async [(Int, Nat)] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can perform this action");
-    };
-
-    let salesMap = Map.empty<Int, Nat>();
-    let daysInMonth = 30;
-
-    func updateSalesMap(timestamp : Int, total : Nat) {
-      let month = timestamp / (daysInMonth * dayInNanoseconds);
-      let existingTotal = switch (salesMap.get(month)) {
-        case (?oldTotal) { oldTotal };
-        case (null) { 0 };
-      };
-      salesMap.add(month, existingTotal + total);
-    };
-
-    for (order in finalizedOrders.values()) {
-      updateSalesMap(order.timestamp, order.total);
-    };
-
-    salesMap.toArray();
-  };
-
-  public query ({ caller }) func getPreviousDaySales() : async ?PreviousDaySales {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can perform this action");
-    };
-
-    let currentTimeStamp = 0; // Placeholder for current time
-    let today = currentTimeStamp / dayInNanoseconds;
-    let previousDay = today - 1;
-
-    var totalRevenue = 0;
-    var totalBills = 0;
-
-    for (order in finalizedOrders.values()) {
-      let orderDay = order.timestamp / dayInNanoseconds;
-      if (orderDay == previousDay) {
-        totalRevenue += order.total;
-        totalBills += 1;
-      };
-    };
-
-    if (totalBills == 0) { null } else {
-      ?{ totalRevenue; totalBills };
-    };
-  };
-
-  public shared ({ caller }) func clearActiveOrders() : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can clear active orders");
-    };
-    orders.clear();
-  };
-
-  // Clear all persisted state - Admin only
-  public shared ({ caller }) func clearAllState() : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can clear all state");
-    };
-    menuItems.clear();
-    orders.clear();
-    finalizedOrders.clear();
-    userProfiles.clear();
-    nextOrderId := 1;
-    nextFinalizedOrderId := 1;
   };
 };
